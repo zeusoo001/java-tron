@@ -153,8 +153,9 @@ public class BlockMsgHandler implements TronMsgHandler {
 
       witnessProductBlockService.validWitnessProductTwoBlock(block);
 
+      Item item = new Item(blockId, InventoryType.BLOCK);
       tronNetDelegate.getActivePeer().forEach(p -> {
-        if (p.getAdvInvReceive().getIfPresent(blockId) != null) {
+        if (p.getAdvInvReceive().getIfPresent(item) != null) {
           p.setBlockBothHave(blockId);
         }
       });
