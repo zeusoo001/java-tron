@@ -3,6 +3,7 @@ package org.tron.core.db;
 import static org.tron.core.config.Parameter.ChainConstant.TRX_PRECISION;
 import static org.tron.protos.Protocol.Transaction.Contract.ContractType.ShieldedTransferContract;
 import static org.tron.protos.Protocol.Transaction.Contract.ContractType.TransferAssetContract;
+import static org.tron.protos.contract.Common.ResourceCode.BANDWIDTH;
 
 import com.google.protobuf.ByteString;
 import java.util.HashMap;
@@ -22,9 +23,6 @@ import org.tron.core.exception.ContractValidateException;
 import org.tron.core.exception.TooBigTransactionResultException;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.contract.AssetIssueContractOuterClass.TransferAssetContract;
-import org.tron.protos.contract.BalanceContract.TransferContract;
-
-import static org.tron.protos.contract.Common.ResourceCode.BANDWIDTH;
 
 @Slf4j(topic = "DB")
 public class BandwidthProcessor extends ResourceProcessor {
@@ -126,7 +124,7 @@ public class BandwidthProcessor extends ResourceProcessor {
             StringUtil.encode58Check(address)));
       }
       long now = chainBaseManager.getHeadSlot();
-      if (contractCreateNewAccount(contract)) {
+      if (chainBaseManager.contractCreateNewAccount(contract)) {
         consumeForCreateNewAccount(accountCapsule, bytesSize, now, trace);
         continue;
       }
@@ -234,37 +232,6 @@ public class BandwidthProcessor extends ResourceProcessor {
       return false;
     }
   }
-
-  public boolean contractCreateNewAccount(Contract contract) {
-    AccountCapsule toAccount;
-    switch (contract.getType()) {
-      case AccountCreateContract:
-        return true;
-      case TransferContract:
-        TransferContract transferContract;
-        try {
-          transferContract = contract.getParameter().unpack(TransferContract.class);
-        } catch (Exception ex) {
-          throw new RuntimeException(ex.getMessage());
-        }
-        toAccount =
-            chainBaseManager.getAccountStore().get(transferContract.getToAddress().toByteArray());
-        return toAccount == null;
-      case TransferAssetContract:
-        TransferAssetContract transferAssetContract;
-        try {
-          transferAssetContract = contract.getParameter().unpack(TransferAssetContract.class);
-        } catch (Exception ex) {
-          throw new RuntimeException(ex.getMessage());
-        }
-        toAccount = chainBaseManager.getAccountStore()
-            .get(transferAssetContract.getToAddress().toByteArray());
-        return toAccount == null;
-      default:
-        return false;
-    }
-  }
-
 
   private boolean useAssetAccountNet(Contract contract, AccountCapsule accountCapsule, long now,
       long bytes)
