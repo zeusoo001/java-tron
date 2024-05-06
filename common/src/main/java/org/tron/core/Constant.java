@@ -379,5 +379,6 @@ public class Constant {
   public static final String MAX_UNSOLIDIFIED_BLOCKS = "node.maxUnsolidifiedBlocks";
   public static final String COMMITTEE_ALLOW_OLD_REWARD_OPT = "committee.allowOldRewardOpt";
 
+  public static final String MAX_CREATE_ACCOUNT_TX_SIZE = "node.maxCreateAccountTxSize";
   public static final String COMMITTEE_ALLOW_ENERGY_ADJUSTMENT = "committee.allowEnergyAdjustment";
 }
