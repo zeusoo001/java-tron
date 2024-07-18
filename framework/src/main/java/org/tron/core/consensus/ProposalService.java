@@ -367,6 +367,11 @@ public class ProposalService extends ProposalUtil {
           manager.getDynamicPropertiesStore().saveMaxCreateAccountTxSize(entry.getValue());
           break;
         }
+        case MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK: {
+          manager.getDynamicPropertiesStore()
+            .saveMaintenanceNotAllowGenerateBlock(entry.getValue());
+          break;
+        }
         default:
           find = false;
           break;

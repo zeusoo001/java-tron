@@ -24,7 +24,8 @@ public class Parameter {
     VERSION_4_7_1(27, 1596780000000L, 80),
     VERSION_4_7_2(28, 1596780000000L, 80),
     VERSION_4_7_4(29, 1596780000000L, 80),
-    VERSION_4_7_5(30, 1596780000000L, 80);
+    VERSION_4_7_5(30, 1596780000000L, 80),
+    VERSION_4_7_6(31, 1596780000000L, 80);
     // if add a version, modify BLOCK_VERSION simultaneously
 
     @Getter
