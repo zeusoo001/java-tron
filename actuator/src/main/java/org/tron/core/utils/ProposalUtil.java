@@ -779,6 +779,17 @@ public class ProposalUtil {
         }
         break;
       }
+      case MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK: {
+        if (!forkController.pass(ForkBlockVersionEnum.VERSION_4_7_6)) {
+          throw new ContractValidateException(
+            "Bad chain parameter id [MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK]");
+        }
+        if (value != 1) {
+          throw new ContractValidateException(
+            "This value[MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK] is only allowed to be 1");
+        }
+        break;
+      }
       default:
         break;
     }
@@ -857,7 +868,8 @@ public class ProposalUtil {
     MAX_DELEGATE_LOCK_PERIOD(78), // (86400, 10512000]
     ALLOW_OLD_REWARD_OPT(79), // 0, 1
     ALLOW_ENERGY_ADJUSTMENT(81), // 0, 1
-    MAX_CREATE_ACCOUNT_TX_SIZE(82); // [500, 10000]
+    MAX_CREATE_ACCOUNT_TX_SIZE(82), // [500, 10000]
+    MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK(83); // 0, 1
 
     private long code;
 
