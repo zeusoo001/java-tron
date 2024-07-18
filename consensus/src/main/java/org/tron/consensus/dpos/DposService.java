@@ -1,8 +1,5 @@
 package org.tron.consensus.dpos;
 
-import static org.tron.core.config.Parameter.ChainConstant.MAX_ACTIVE_WITNESS_NUM;
-import static org.tron.core.config.Parameter.ChainConstant.SOLIDIFIED_THRESHOLD;
-
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,6 +23,8 @@ import org.tron.consensus.base.Param;
 import org.tron.consensus.base.Param.Miner;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.WitnessCapsule;
+
+import static org.tron.core.config.Parameter.ChainConstant.*;
 
 @Slf4j(topic = "consensus")
 @Component
@@ -116,6 +115,12 @@ public class DposService implements ConsensusInterface {
     }
     ByteString witnessAddress = blockCapsule.getWitnessAddress();
     long timeStamp = blockCapsule.getTimeStamp();
+    if (timeStamp % BLOCK_PRODUCED_INTERVAL != 0
+      && consensusDelegate.getDynamicPropertiesStore().getMaintenanceNotAllowGenerateBlock() == 1) {
+      logger.warn("ValidBlock failed: witness: {}, timeStamp: {}",
+        ByteArray.toHexString(witnessAddress.toByteArray()), new DateTime(timeStamp));
+      return false;
+    }
     long bSlot = dposSlot.getAbSlot(timeStamp);
     long hSlot = dposSlot.getAbSlot(consensusDelegate.getLatestBlockHeaderTimestamp());
     if (bSlot <= hSlot) {
@@ -124,6 +129,13 @@ public class DposService implements ConsensusInterface {
     }
 
     long slot = dposSlot.getSlot(timeStamp);
+    if (slot == 0
+      && consensusDelegate.getDynamicPropertiesStore()
+      .getMaintenanceNotAllowGenerateBlock() == 1) {
+      logger.warn("ValidBlock failed: slot error, witness: {}, timeStamp: {}",
+        ByteArray.toHexString(witnessAddress.toByteArray()), new DateTime(timeStamp));
+      return false;
+    }
     final ByteString scheduledWitness = dposSlot.getScheduledWitness(slot);
     if (!scheduledWitness.equals(witnessAddress)) {
       logger.warn("ValidBlock failed: sWitness: {}, bWitness: {}, bTimeStamp: {}, slot: {}",

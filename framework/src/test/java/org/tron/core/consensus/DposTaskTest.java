@@ -18,7 +18,7 @@ public class DposTaskTest {
   private DposTask dposTask = new DposTask();
 
   @Test
-  public void tet() throws Exception {
+  public void test() throws Exception {
     StateManager stateManager = mock(StateManager.class);
     Mockito.when(stateManager.getState()).thenReturn(State.BACKUP_IS_NOT_MASTER);
 

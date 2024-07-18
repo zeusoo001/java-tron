@@ -223,6 +223,9 @@ public class DynamicPropertiesStore extends TronStoreWithRevoking<BytesCapsule> 
 
   private static final byte[] MAX_CREATE_ACCOUNT_TX_SIZE = "MAX_CREATE_ACCOUNT_TX_SIZE".getBytes();
 
+  private static final byte[] MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK
+      = "MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK".getBytes();
+
   @Autowired
   private DynamicPropertiesStore(@Value("properties") String dbName) {
     super(dbName);
@@ -2875,6 +2878,18 @@ public class DynamicPropertiesStore extends TronStoreWithRevoking<BytesCapsule> 
         .map(BytesCapsule::getData)
         .map(ByteArray::toLong)
         .orElse(CommonParameter.getInstance().getMaxCreateAccountTxSize());
+  }
+
+  public void saveMaintenanceNotAllowGenerateBlock(long value) {
+    this.put(MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK,
+      new BytesCapsule(ByteArray.fromLong(value)));
+  }
+
+  public long getMaintenanceNotAllowGenerateBlock() {
+    return Optional.ofNullable(getUnchecked(MAINTENANCE_NOT_ALLOW_GENERATE_BLOCK))
+      .map(BytesCapsule::getData)
+      .map(ByteArray::toLong)
+      .orElse(CommonParameter.getInstance().getMaintenanceNotAllowGenerateBlock());
   }
 
   private static class DynamicResourceProperties {
