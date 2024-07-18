@@ -1342,6 +1342,11 @@ public class Wallet {
         .setValue(dbManager.getDynamicPropertiesStore().getMaxCreateAccountTxSize())
         .build());
 
+    builder.addChainParameter(Protocol.ChainParameters.ChainParameter.newBuilder()
+        .setKey("getMaintenanceNotAllowGenerateBlock")
+        .setValue(dbManager.getDynamicPropertiesStore().getMaintenanceNotAllowGenerateBlock())
+        .build());
+
     return builder.build();
   }
 
