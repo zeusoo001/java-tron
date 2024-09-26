@@ -32,12 +32,12 @@ public class DataProcess {
     public static void load() {
 
         try {
-            for(int m = 0; m <= 3; m++) {
+            for(int m = 0; m <= 2; m++) {
 ////            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
                 String pr = "";
                 if (m == 0) pr = "a";
-                if (m == 0) pr = "b";
-                if (m == 0) pr = "c";
+                if (m == 1) pr = "b";
+                if (m == 2) pr = "c";
                 String path = "/data/trongrid-newlog/data/xa" + pr;
 //
 //                Scanner scanner = new Scanner(new File(path));
