@@ -38,7 +38,10 @@ public class DataProcess {
                 if (m == 0) pr = "a";
                 if (m == 1) pr = "b";
                 if (m == 2) pr = "c";
+
                 String path = "/data/trongrid-newlog/data/xa" + pr;
+
+                logger.info("path {}", path);
 //
 //                Scanner scanner = new Scanner(new File(path));
 //                String s = scanner.nextLine();
@@ -53,9 +56,17 @@ public class DataProcess {
 //                }
 
                 byte[] bytes = Files.readAllBytes(Paths.get(path));
+
+                logger.info("bytes {}", bytes.length);
+
                 String content = new String(bytes, StandardCharsets.UTF_8);
-                int index = 0;
+
                 String[] sz = content.split("\n");
+
+                logger.info("sz {}", sz.length);
+
+                int index = 0;
+
                 for(int i = 1; i < sz.length; i++) {
                     if(sz[i].startsWith("api.fullnode")) {
                         String tmp = "";
@@ -63,6 +74,7 @@ public class DataProcess {
                             tmp += sz[n];
                         }
                         process(tmp);
+                        logger.info(tmp);
                         index = i;
                     }
                 }
@@ -166,6 +178,7 @@ public class DataProcess {
         TxData txData = null;
         try {
             String[] sz =  s.split(" ");
+            logger.info("sz {}", sz.length);
             if(sz.length == 26) {
                 txData = new TxData();
                 txData.setIp(sz[0].split(":")[1].trim());
