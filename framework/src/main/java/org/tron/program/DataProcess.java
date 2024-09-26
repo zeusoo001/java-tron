@@ -50,7 +50,7 @@ public class DataProcess {
             int index = 0;
 
             for(int i = 1; i < sz.length; i++) {
-                if(sz[i].startsWith("api.fullnode")) {
+                if(sz[i].contains("api.fullnode")) {
                     String tmp = "";
                     for (int n = index; n < i; n++) {
                         tmp += sz[n];
