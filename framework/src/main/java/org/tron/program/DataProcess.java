@@ -109,25 +109,25 @@ public class DataProcess {
 //        }
 //    }
 ////
-//    public static void main(String[] args) throws Exception {
-//        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-//        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-//        String content = new String(bytes, StandardCharsets.UTF_8);
-//        String[] sz = content.split("\n");
-//
-//        int index = 0;
-//        for(int i = 1; i < sz.length; i++) {
-//            if(sz[i].startsWith("api.fullnode")) {
-//                String tmp = "";
-//                for (int n = index; n < i; n++) {
-//                    tmp += sz[n];
-//                }
-//                process(tmp);
-//                index = i;
-//            }
-//        }
-//        System.out.println(ips);
-//    }
+    public static void main(String[] args) throws Exception {
+        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
+        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        String[] sz = content.split("\n");
+
+        int index = 0;
+        for(int i = 1; i < sz.length; i++) {
+            if(sz[i].startsWith("api.fullnode")) {
+                String tmp = "";
+                for (int n = index; n < i; n++) {
+                    tmp += sz[n];
+                }
+                process(tmp);
+                index = i;
+            }
+        }
+        System.out.println(ips);
+    }
 
     @Data
     public static class TxData {
@@ -158,20 +158,36 @@ public class DataProcess {
     }
 
     public static TxData get(String s) {
+        TxData txData = null;
         try {
             String[] sz =  s.split(" ");
             if(sz.length != 26) {
-                logger.info("error length {}", sz.length);
-                return null;
+                txData = new TxData();
+                txData.setIp(sz[0].split(":")[1].trim());
+                txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
+                txData.setUA(sz[12].substring(1, sz[12].length() - 1));
+                txData.setServiceIp(sz[13].substring(1, sz[13].length() - 1));
+                txData.setApiKey(sz[18].substring(1, sz[18].length() - 1));
+                txData.setTxId(sz[25].substring(0, sz[25].length() - 1));
             }
-            TxData txData = new TxData();
-            txData.setApiKey(sz[5]);
-            txData.setIp(sz[0].split(":")[1].trim());
-            txData.setApiKey(sz[18].substring(1, sz[18].length() - 1));
-            txData.setServiceIp(sz[13].substring(1, sz[13].length() - 1));
-            txData.setUA(sz[12].substring(1, sz[12].length() - 1));
-            txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
-            txData.setTxId(sz[25].substring(0, sz[25].length() - 1));
+            if (sz.length == 27) {
+                txData = new TxData();
+                txData.setIp(sz[0].split(":")[1].trim());
+                txData.setTime(sz[4].split("\\[19/Sep/")[1].split(" ")[0]);
+                txData.setUA(sz[13].substring(1, sz[12].length() - 1));
+                txData.setServiceIp(sz[14].substring(1, sz[13].length() - 1));
+                txData.setApiKey(sz[19].substring(1, sz[18].length() - 1));
+                txData.setTxId(sz[26].substring(0, sz[25].length() - 1));
+            }
+            if (sz.length == 28) {
+                txData = new TxData();
+                txData.setIp(sz[0].split(":")[1].trim());
+                txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
+                txData.setUA(sz[12].substring(1, sz[12].length() - 1));
+                txData.setServiceIp(sz[15].substring(1, sz[13].length() - 1));
+                txData.setApiKey(sz[20].substring(1, sz[18].length() - 1));
+                txData.setTxId(sz[27].substring(0, sz[25].length() - 1));
+            }
             return txData;
         }catch (Exception e) {
             logger.error("{}", e.getMessage());
