@@ -18,7 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Slf4j
+@Slf4j(topic = "Data")
 public class DataProcess {
 
     @Setter
