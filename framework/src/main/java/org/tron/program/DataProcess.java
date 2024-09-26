@@ -74,7 +74,6 @@ public class DataProcess {
                             tmp += sz[n];
                         }
                         process(tmp);
-                        logger.info(tmp);
                         index = i;
                     }
                 }
@@ -143,7 +142,6 @@ public class DataProcess {
                 index = i;
             }
         }
-        System.out.println(ips);
     }
 
     @Data
