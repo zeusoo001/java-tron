@@ -161,7 +161,7 @@ public class DataProcess {
         TxData txData = null;
         try {
             String[] sz =  s.split(" ");
-            if(sz.length != 26) {
+            if(sz.length == 26) {
                 txData = new TxData();
                 txData.setIp(sz[0].split(":")[1].trim());
                 txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
