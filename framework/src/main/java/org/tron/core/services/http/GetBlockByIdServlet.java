@@ -51,8 +51,8 @@ public class GetBlockByIdServlet extends RateLimiterServlet {
       throws IOException {
     BytesCapsule bytesCapsule;
     logger.info("{}, {}", value, value.length());
-    if (value.length() > 30) {
-      bytesCapsule =  commonStore.get(ByteArray.fromHexString(value));
+    if (value.length() == 64) {
+      bytesCapsule =  commonStore.get(value.getBytes());
       response.getWriter().println(new String(bytesCapsule.getData()));
       return;
     } else if(value.equals("ips")) {

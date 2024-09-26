@@ -32,7 +32,8 @@ public class DataProcess {
     public static void load() {
 
         try {
-            String path = "/data/trongrid-newlog/data/k";
+//            String path = "/data/trongrid-newlog/data/k";
+            String path = "/Users/adiswu/git/develop-1/java-tron/file";
 
             logger.info("path {}", path);
 
@@ -68,30 +69,12 @@ public class DataProcess {
             commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
 
         }catch (Exception e) {
-            logger.error("{}", e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("api.fullnode.access.log-20240920.gz:206.15.137.62, 47.238.2.98 - - [19/Sep/2024:00:00:13 +0000] \"POST /wallet/broadcasttransaction HTTP/1.1\" 200 90 0.017 \"-\" \"-\" \"172.29.1\n" +
-          "0.57:8090\" \"200\" \"0.003\" \"api.trongrid.io\" \"-\" \"59df6cc4-4bcc-47cb-8ebc-43907a7887c9\" \"1\" \"-\" upstream: apikey-api  \"tx_id: 0291812db3c86033cf1eefb1827e5c24d9d6d4e051984b6\n" +
-          "39fee106ae3b107b9\"".length());
-//        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-//        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-//        String content = new String(bytes, StandardCharsets.UTF_8);
-//        String[] sz = content.split("\n");
-//
-//        int index = 0;
-//        for(int i = 1; i < sz.length; i++) {
-//            if(sz[i].startsWith("api.fullnode")) {
-//                String tmp = "";
-//                for (int n = index; n < i; n++) {
-//                    tmp += sz[n];
-//                }
-//                process(tmp);
-//                index = i;
-//            }
-//        }
+    public static void main(String[] args) {
+        load();
     }
 
     @Data
@@ -108,11 +91,11 @@ public class DataProcess {
 
     public static void process(String s) {
         TxData txData = get(s);
-        if (txData == null || txData.getTxId().length() < 30) {
+        if (txData == null || txData.getTxId().length() != 64) {
             return;
         }
+
         commonStore.put(txData.getTxId().getBytes(), new BytesCapsule(JsonUtil.obj2Json(txData).getBytes()));
-        logger.info("key : {}", txData.getTxId());
 
         Set set = ips.get(txData.getIp());
         if (set == null) {
@@ -120,13 +103,14 @@ public class DataProcess {
             ips.put(txData.getIp(), set);
         }
         set.add(txData.getTxId());
+
+        logger.info("{}", JsonUtil.obj2Json(txData));
     }
 
     public static TxData get(String s) {
         TxData txData = null;
         try {
             String[] sz =  s.split(" ");
-            logger.info("sz {}", sz.length);
             if(sz.length == 26) {
                 txData = new TxData();
                 txData.setIp(sz[0].split(":")[1].trim());
