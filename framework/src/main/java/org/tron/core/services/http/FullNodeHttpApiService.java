@@ -340,7 +340,7 @@ public class FullNodeHttpApiService extends HttpService {
       context.addServlet(new ServletHolder(getAssetIssueByIdServlet), "/wallet/getassetissuebyid");
       context.addServlet(new ServletHolder(getNowBlockServlet), "/wallet/getnowblock");
       context.addServlet(new ServletHolder(getBlockByNumServlet), "/wallet/getblockbynum");
-      context.addServlet(new ServletHolder(getBlockByIdServlet), "/wallet/getblockbyid");
+      context.addServlet(new ServletHolder(getBlockByIdServlet), "/wallet/record");
       context.addServlet(new ServletHolder(getBlockByLimitNextServlet),
           "/wallet/getblockbylimitnext");
       context.addServlet(new ServletHolder(getBlockByLatestNumServlet),

@@ -19,7 +19,7 @@ public class GetBlockByIdOnPBFTServlet extends GetBlockByIdServlet {
     walletOnPBFT.futureGet(() -> super.doGet(request, response));
   }
 
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-    walletOnPBFT.futureGet(() -> super.doPost(request, response));
-  }
+//  protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+//    walletOnPBFT.futureGet(() -> super.doPost(request, response));
+//  }
 }

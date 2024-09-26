@@ -20,6 +20,6 @@ public class GetBlockByIdOnSolidityServlet extends GetBlockByIdServlet {
   }
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-    walletOnSolidity.futureGet(() -> super.doPost(request, response));
+//    walletOnSolidity.futureGet(() -> super.doPost(request, response));
   }
 }

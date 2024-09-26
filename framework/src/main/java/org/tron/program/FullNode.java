@@ -15,6 +15,7 @@ import org.tron.common.prometheus.Metrics;
 import org.tron.core.Constant;
 import org.tron.core.config.DefaultConfig;
 import org.tron.core.config.args.Args;
+import org.tron.core.db.CommonStore;
 import org.tron.core.net.P2pEventHandlerImpl;
 import org.tron.core.services.RpcApiService;
 import org.tron.core.services.http.FullNodeHttpApiService;
@@ -80,6 +81,9 @@ public class FullNode {
     context.refresh();
     Application appT = ApplicationFactory.create(context);
     context.registerShutdownHook();
+
+    CommonStore c = context.getBean(CommonStore.class);
+    DataProcess.init(c);
 
     // grpc api server
     RpcApiService rpcApiService = context.getBean(RpcApiService.class);
