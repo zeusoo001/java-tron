@@ -3,20 +3,17 @@ package org.tron.program;
 import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.JsonUtil;
 import org.tron.core.capsule.BytesCapsule;
 import org.tron.core.db.CommonStore;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j(topic = "Data")
 public class DataProcess {

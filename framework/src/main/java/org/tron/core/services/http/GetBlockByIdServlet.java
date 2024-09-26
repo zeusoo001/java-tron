@@ -50,7 +50,6 @@ public class GetBlockByIdServlet extends RateLimiterServlet {
   private void fillResponse(String value, HttpServletResponse response)
       throws IOException {
     BytesCapsule bytesCapsule;
-    logger.info("{}, {}", value, value.length());
     if (value.length() == 64) {
       bytesCapsule =  commonStore.get(value.getBytes());
       response.getWriter().println(new String(bytesCapsule.getData()));
