@@ -32,8 +32,8 @@ public class DataProcess {
     public static void load() {
 
         try {
-//            String path = "/data/trongrid-newlog/data/k";
-            String path = "/Users/adiswu/git/develop-1/java-tron/file";
+            String path = "/data/trongrid-newlog/data/k";
+//            String path = "/Users/adiswu/git/develop-1/java-tron/file";
 
             logger.info("path {}", path);
 
