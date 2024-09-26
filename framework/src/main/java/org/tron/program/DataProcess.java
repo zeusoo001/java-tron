@@ -32,8 +32,8 @@ public class DataProcess {
     public static void load() {
 
         try {
-//            String path = "/data/trongrid-newlog/data/k";
-            String path = "/Users/adiswu/git/develop-1/java-tron/file";
+            String path = "/data/trongrid-newlog/data/k";
+//            String path = "/Users/adiswu/git/develop-1/java-tron/file";
 
             logger.info("path {}", path);
 
@@ -117,7 +117,7 @@ public class DataProcess {
             }
             if(sz.length == 26) {
                 txData = new TxData();
-                txData.setIp(sz[0].split(":")[1].trim());
+                txData.setIp(sz[0].split(":")[2].trim());
                 txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
                 txData.setUA(sz[12].substring(1, sz[12].length() - 1));
                 txData.setServiceIp(sz[13].substring(1, sz[13].length() - 1));
@@ -135,7 +135,7 @@ public class DataProcess {
             }
             if (sz.length == 28) {
                 txData = new TxData();
-                txData.setIp(sz[0].split(":")[1].trim());
+                txData.setIp(sz[0].split(":")[2].trim());
                 txData.setTime(sz[3].split("\\[19/Sep/")[1].split(" ")[0]);
                 txData.setUA(sz[12].substring(1, sz[12].length() - 1));
                 txData.setServiceIp(sz[15].substring(1, sz[13].length() - 1));
