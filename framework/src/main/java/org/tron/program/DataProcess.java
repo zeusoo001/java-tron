@@ -30,37 +30,42 @@ public class DataProcess {
     }
 
     public static void load() {
-        try {
-            for(int m = 1; m <= 10; m++) {
-//            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-                String path = "/data/trongrid-newlog/data/a" + m;
 
-                Scanner scanner = new Scanner(new File(path));
-                String s = scanner.nextLine();
-                while (scanner.hasNextLine()) {
-                    String tmp = scanner.nextLine();
-                    if (tmp.startsWith("api.fullnode")) {
-                        process(s);
-                        s = tmp;
-                    } else {
-                        s += tmp;
-                    }
-                }
+        try {
+            for(int m = 0; m <= 3; m++) {
+////            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
+                String pr = "";
+                if (m == 0) pr = "a";
+                if (m == 0) pr = "b";
+                if (m == 0) pr = "c";
+                String path = "/data/trongrid-newlog/data/xa" + m;
 //
-//                byte[] bytes = Files.readAllBytes(Paths.get(path));
-//                String content = new String(bytes, StandardCharsets.UTF_8);
-//                int index = 0;
-//                String[] sz = content.split("\n");
-//                for(int i = 1; i < sz.length; i++) {
-//                    if(sz[i].startsWith("api.fullnode")) {
-//                        String tmp = "";
-//                        for (int n = index; n < i; n++) {
-//                            tmp += sz[n];
-//                        }
-//                        process(tmp);
-//                        index = i;
+//                Scanner scanner = new Scanner(new File(path));
+//                String s = scanner.nextLine();
+//                while (scanner.hasNextLine()) {
+//                    String tmp = scanner.nextLine();
+//                    if (tmp.startsWith("api.fullnode")) {
+//                        process(s);
+//                        s = tmp;
+//                    } else {
+//                        s += tmp;
 //                    }
 //                }
+
+                byte[] bytes = Files.readAllBytes(Paths.get(path));
+                String content = new String(bytes, StandardCharsets.UTF_8);
+                int index = 0;
+                String[] sz = content.split("\n");
+                for(int i = 1; i < sz.length; i++) {
+                    if(sz[i].startsWith("api.fullnode")) {
+                        String tmp = "";
+                        for (int n = index; n < i; n++) {
+                            tmp += sz[n];
+                        }
+                        process(tmp);
+                        index = i;
+                    }
+                }
             }
 
 
@@ -143,7 +148,7 @@ public class DataProcess {
 
     public static void process(String s) {
         TxData txData = get(s);
-        if (txData == null) {
+        if (txData == null || txData.getTxId().length() < 30) {
             return;
         }
         commonStore.put(txData.getTxId().getBytes(), new BytesCapsule(JsonUtil.obj2Json(txData).getBytes()));
