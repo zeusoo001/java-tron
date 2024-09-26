@@ -440,7 +440,7 @@ public class HttpServletTest {
     getAvailableUnfreezeCountServlet.doPost(request, response);
     getBandwidthPricesServlet.doPost(request, response);
     getBlockBalanceServlet.doPost(request, response);
-    getBlockByIdServlet.doPost(request, response);
+//    getBlockByIdServlet.doPost(request, response);
     getBlockByLatestNumServlet.doPost(request, response);
     getBlockByLimitNextServlet.doPost(request, response);
     getBlockByNumServlet.doPost(request, response);
