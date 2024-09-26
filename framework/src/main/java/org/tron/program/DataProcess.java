@@ -38,7 +38,7 @@ public class DataProcess {
                 if (m == 0) pr = "a";
                 if (m == 0) pr = "b";
                 if (m == 0) pr = "c";
-                String path = "/data/trongrid-newlog/data/xa" + m;
+                String path = "/data/trongrid-newlog/data/xa" + pr;
 //
 //                Scanner scanner = new Scanner(new File(path));
 //                String s = scanner.nextLine();
