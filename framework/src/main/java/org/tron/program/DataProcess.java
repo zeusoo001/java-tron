@@ -32,50 +32,32 @@ public class DataProcess {
     public static void load() {
 
         try {
-            for(int m = 1; m <= 10; m++) {
-////            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
+            String path = "/data/trongrid-newlog/data/k";
 
+            logger.info("path {}", path);
 
-                String path = "/data/trongrid-newlog/data/p" + 10;
+            byte[] bytes = Files.readAllBytes(Paths.get(path));
 
-                logger.info("path {}", path);
-//
-//                Scanner scanner = new Scanner(new File(path));
-//                String s = scanner.nextLine();
-//                while (scanner.hasNextLine()) {
-//                    String tmp = scanner.nextLine();
-//                    if (tmp.startsWith("api.fullnode")) {
-//                        process(s);
-//                        s = tmp;
-//                    } else {
-//                        s += tmp;
-//                    }
-//                }
+            logger.info("bytes {}", bytes.length);
 
-                byte[] bytes = Files.readAllBytes(Paths.get(path));
+            String content = new String(bytes, StandardCharsets.UTF_8);
 
-                logger.info("bytes {}", bytes.length);
+            String[] sz = content.split("\n");
 
-                String content = new String(bytes, StandardCharsets.UTF_8);
+            logger.info("sz {}", sz.length);
 
-                String[] sz = content.split("\n");
+            int index = 0;
 
-                logger.info("sz {}", sz.length);
-
-                int index = 0;
-
-                for(int i = 1; i < sz.length; i++) {
-                    if(sz[i].startsWith("api.fullnode")) {
-                        String tmp = "";
-                        for (int n = index; n < i; n++) {
-                            tmp += sz[n];
-                        }
-                        process(tmp);
-                        index = i;
+            for(int i = 1; i < sz.length; i++) {
+                if(sz[i].startsWith("api.fullnode")) {
+                    String tmp = "";
+                    for (int n = index; n < i; n++) {
+                        tmp += sz[n];
                     }
+                    process(tmp);
+                    index = i;
                 }
             }
-
 
             Map<String, Integer> map = new HashMap<>();
             ips.forEach((k, v) -> {
@@ -84,61 +66,32 @@ public class DataProcess {
             }) ;
 
             commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
+
         }catch (Exception e) {
             logger.error("{}", e.getMessage());
         }
     }
-//
 
-//    public static void load() {
-//        try {
-//            for(int m = 1; m <= 10; m++) {
-////            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-//                String fileName = "/data/trongrid-newlog/data/a" + m;
-//                byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-//                String content = new String(bytes, StandardCharsets.UTF_8);
-//                int index = 0;
-//                String[] sz = content.split("\n");
-//                for(int i = 1; i < sz.length; i++) {
-//                    if(sz[i].startsWith("api.fullnode")) {
-//                        String tmp = "";
-//                        for (int n = index; n < i; n++) {
-//                            tmp += sz[n];
-//                        }
-//                        process(tmp);
-//                        index = i;
-//                    }
-//                }
-//            }
-//            Map<String, Integer> map = new HashMap<>();
-//            ips.forEach((k, v) -> {
-//                commonStore.put(k.getBytes(), new BytesCapsule(JsonUtil.obj2Json(v).getBytes()));
-//                map.put(k, v.size());
-//            }) ;
-//
-//            commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
-//        }catch (Exception e) {
-//            logger.error("{}", e.getMessage());
-//        }
-//    }
-////
     public static void main(String[] args) throws Exception {
-        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-        String content = new String(bytes, StandardCharsets.UTF_8);
-        String[] sz = content.split("\n");
-
-        int index = 0;
-        for(int i = 1; i < sz.length; i++) {
-            if(sz[i].startsWith("api.fullnode")) {
-                String tmp = "";
-                for (int n = index; n < i; n++) {
-                    tmp += sz[n];
-                }
-                process(tmp);
-                index = i;
-            }
-        }
+        System.out.println("api.fullnode.access.log-20240920.gz:206.15.137.62, 47.238.2.98 - - [19/Sep/2024:00:00:13 +0000] \"POST /wallet/broadcasttransaction HTTP/1.1\" 200 90 0.017 \"-\" \"-\" \"172.29.1\n" +
+          "0.57:8090\" \"200\" \"0.003\" \"api.trongrid.io\" \"-\" \"59df6cc4-4bcc-47cb-8ebc-43907a7887c9\" \"1\" \"-\" upstream: apikey-api  \"tx_id: 0291812db3c86033cf1eefb1827e5c24d9d6d4e051984b6\n" +
+          "39fee106ae3b107b9\"".length());
+//        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
+//        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
+//        String content = new String(bytes, StandardCharsets.UTF_8);
+//        String[] sz = content.split("\n");
+//
+//        int index = 0;
+//        for(int i = 1; i < sz.length; i++) {
+//            if(sz[i].startsWith("api.fullnode")) {
+//                String tmp = "";
+//                for (int n = index; n < i; n++) {
+//                    tmp += sz[n];
+//                }
+//                process(tmp);
+//                index = i;
+//            }
+//        }
     }
 
     @Data
