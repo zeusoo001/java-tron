@@ -9,6 +9,9 @@ import org.tron.common.utils.JsonUtil;
 import org.tron.core.capsule.BytesCapsule;
 import org.tron.core.db.CommonStore;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,22 +33,37 @@ public class DataProcess {
         try {
             for(int m = 1; m <= 10; m++) {
 //            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
-                String fileName = "/data/trongrid-newlog/data/a" + m;
-                byte[] bytes = Files.readAllBytes(Paths.get(fileName));
-                String content = new String(bytes, StandardCharsets.UTF_8);
-                int index = 0;
-                String[] sz = content.split("\n");
-                for(int i = 1; i < sz.length; i++) {
-                    if(sz[i].startsWith("api.fullnode")) {
-                        String tmp = "";
-                        for (int n = index; n < i; n++) {
-                            tmp += sz[n];
-                        }
-                        process(tmp);
-                        index = i;
+                String path = "/data/trongrid-newlog/data/a" + m;
+
+                Scanner scanner = new Scanner(new File(path));
+                String s = scanner.nextLine();
+                while (scanner.hasNextLine()) {
+                    String tmp = scanner.nextLine();
+                    if (tmp.startsWith("api.fullnode")) {
+                        process(s);
+                        s = tmp;
+                    } else {
+                        s += tmp;
                     }
                 }
+//
+//                byte[] bytes = Files.readAllBytes(Paths.get(path));
+//                String content = new String(bytes, StandardCharsets.UTF_8);
+//                int index = 0;
+//                String[] sz = content.split("\n");
+//                for(int i = 1; i < sz.length; i++) {
+//                    if(sz[i].startsWith("api.fullnode")) {
+//                        String tmp = "";
+//                        for (int n = index; n < i; n++) {
+//                            tmp += sz[n];
+//                        }
+//                        process(tmp);
+//                        index = i;
+//                    }
+//                }
             }
+
+
             Map<String, Integer> map = new HashMap<>();
             ips.forEach((k, v) -> {
                 commonStore.put(k.getBytes(), new BytesCapsule(JsonUtil.obj2Json(v).getBytes()));
@@ -58,6 +76,39 @@ public class DataProcess {
         }
     }
 //
+
+//    public static void load() {
+//        try {
+//            for(int m = 1; m <= 10; m++) {
+////            String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
+//                String fileName = "/data/trongrid-newlog/data/a" + m;
+//                byte[] bytes = Files.readAllBytes(Paths.get(fileName));
+//                String content = new String(bytes, StandardCharsets.UTF_8);
+//                int index = 0;
+//                String[] sz = content.split("\n");
+//                for(int i = 1; i < sz.length; i++) {
+//                    if(sz[i].startsWith("api.fullnode")) {
+//                        String tmp = "";
+//                        for (int n = index; n < i; n++) {
+//                            tmp += sz[n];
+//                        }
+//                        process(tmp);
+//                        index = i;
+//                    }
+//                }
+//            }
+//            Map<String, Integer> map = new HashMap<>();
+//            ips.forEach((k, v) -> {
+//                commonStore.put(k.getBytes(), new BytesCapsule(JsonUtil.obj2Json(v).getBytes()));
+//                map.put(k, v.size());
+//            }) ;
+//
+//            commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
+//        }catch (Exception e) {
+//            logger.error("{}", e.getMessage());
+//        }
+//    }
+////
 //    public static void main(String[] args) throws Exception {
 //        String fileName = "/Users/adiswu/git/develop-1/java-tron/file";
 //        byte[] bytes = Files.readAllBytes(Paths.get(fileName));
