@@ -83,9 +83,9 @@ public class FullNode {
     context.registerShutdownHook();
 
     CommonStore c = context.getBean(CommonStore.class);
-//    new Thread(() -> {
-//      DataProcess.init(c);
-//    }).start();
+    new Thread(() -> {
+      DataProcess.init(c);
+    }).start();
 
 
     // grpc api server
