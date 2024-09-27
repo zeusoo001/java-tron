@@ -50,7 +50,7 @@ public class DataProcess {
                 int index = 0;
                 for(int i = 1; i < sz.length; i++) {
                     try {
-                        if(sz[i] != null && sz[i].contains("api.fullnode")) {
+                        if(sz[i].contains("api.fullnode")) {
                             String tmp = "";
                             for (int n = index; n < i; n++) {
                                 tmp += sz[n];
@@ -61,19 +61,22 @@ public class DataProcess {
                     }catch (Exception e){
                         logger.info("process error 1 {}", e);
                     }
+                    logger.info("now process {}/{}", i, sz.length);
                 }
 
-                logger.info("over process. ip-size {}", ips.size());
+                logger.info("end process path {}", path);
 
-                Map<String, Integer> map = new HashMap<>();
-                ips.forEach((k, v) -> {
-                    commonStore.put(k.getBytes(), new BytesCapsule(JsonUtil.obj2Json(v).getBytes()));
-                    map.put(k, v.size());
-                }) ;
-
-                commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
             }
 
+            logger.info("over process. ip-size {}", ips.size());
+
+            Map<String, Integer> map = new HashMap<>();
+            ips.forEach((k, v) -> {
+                commonStore.put(k.getBytes(), new BytesCapsule(JsonUtil.obj2Json(v).getBytes()));
+                map.put(k, v.size());
+            }) ;
+
+            commonStore.put("all-ip".getBytes(), new BytesCapsule(JsonUtil.obj2Json(map).getBytes()));
         }catch (Exception e) {
             logger.info("process error 2  {}", e);
         }
