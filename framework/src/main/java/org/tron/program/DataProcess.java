@@ -121,18 +121,31 @@ public class DataProcess {
 
     }
 
+
+
     public static TxData get(String s) {
+
         try {
-            TxData txData = new TxData();
-            txData.setIp(s.split(" - - ")[0].split("gz:")[1]);
-            txData.setTime(s.split("\\[")[1].split(" ")[0]);
-            txData.setTxId(s.split("tx_id: ")[1].split("\"")[0]);
-            txData.setApiKey(s.split("\"api.trongrid.io\" \"-\" \"")[1].split("\"")[0]);
-            txData.setUA(s.split("api.trongrid.io")[0].split("\"-\" \"")[1].split("\"")[0]);
-            return txData;
-        }catch (Exception e) {
+            if (s.contains("api.fullnode")) {
+                TxData txData = new TxData();
+                txData.setIp(s.split(" - - ")[0].split("gz:")[1]);
+                txData.setTime(s.split("\\[")[1].split(" ")[0]);
+                txData.setTxId(s.split("tx_id: ")[1].split("\"")[0]);
+                txData.setApiKey(s.split("\"api.trongrid.io\" \"-\" \"")[1].split("\"")[0]);
+                txData.setUA(s.split("api.trongrid.io")[0].split("\"-\" \"")[1].split("\"")[0]);
+                return txData;
+            } else if (s.contains("api-limit.fullnode")) {
+                TxData txData = new TxData();
+                txData.setIp(s.split(" - - ")[0].split("gz:")[1]);
+                txData.setTime(s.split("\\[")[1].split(" ")[0]);
+                txData.setTxId(s.split("tx_id: ")[1].split("\"")[0]);
+                return txData;
+            }else {
+                logger.info(" onxxxx {} ", s.substring(0, 20));
+            }
+        } catch (Exception e) {
             logger.info("process error 3 {}", e);
-            return null;
         }
+        return null;
     }
 }
