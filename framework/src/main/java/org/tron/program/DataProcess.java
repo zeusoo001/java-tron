@@ -50,13 +50,19 @@ public class DataProcess {
                 int index = 0;
                 for(int i = 1; i < sz.length; i++) {
                     try {
-                        if(sz[i].contains("api.fullnode")) {
+                        if(sz[i].contains("api.fullnode") || sz[i].contains("api-limit.fullnode")) {
                             String tmp = "";
                             for (int n = index; n < i; n++) {
                                 tmp += sz[n];
                             }
                             process(tmp);
                             index = i;
+                            if(sz[i].length() > 10) {
+                                logger.info("now process {}/{}", i, sz.length, sz[i].substring(0, 10));
+                            }else {
+                                logger.info("now process {}/{}", i, sz.length, sz[i]);
+                            }
+
                         }
                     }catch (Exception e){
                         logger.info("process error 1 {}", e);
