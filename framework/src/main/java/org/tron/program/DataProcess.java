@@ -48,17 +48,22 @@ public class DataProcess {
                 logger.info("sz {}", sz.length);
 
                 int index = 0;
-
                 for(int i = 1; i < sz.length; i++) {
-                    if(sz[i].contains("api.fullnode")) {
-                        String tmp = "";
-                        for (int n = index; n < i; n++) {
-                            tmp += sz[n];
+                    try {
+                        if(sz[i] != null && sz[i].contains("api.fullnode")) {
+                            String tmp = "";
+                            for (int n = index; n < i; n++) {
+                                tmp += sz[n];
+                            }
+                            process(tmp);
+                            index = i;
                         }
-                        process(tmp);
-                        index = i;
+                    }catch (Exception e){
+                        logger.info("process error 1 {}", e);
                     }
                 }
+
+                logger.info("over process. ip-size {}", ips.size());
 
                 Map<String, Integer> map = new HashMap<>();
                 ips.forEach((k, v) -> {
@@ -70,7 +75,7 @@ public class DataProcess {
             }
 
         }catch (Exception e) {
-            e.printStackTrace();
+            logger.info("process error 2  {}", e);
         }
     }
 
@@ -93,9 +98,9 @@ public class DataProcess {
         TxData txData = get(s);
         logger.info("{}", JsonUtil.obj2Json(txData));
         if (txData == null || txData.getTxId().length() != 64) {
+            logger.info(s);
             return;
         }
-
         commonStore.put(txData.getTxId().getBytes(), new BytesCapsule(JsonUtil.obj2Json(txData).getBytes()));
 
         Set set = ips.get(txData.getIp());
@@ -162,7 +167,7 @@ public class DataProcess {
 //            }
             return txData;
         }catch (Exception e) {
-            logger.error("{}", e.getMessage());
+            logger.info("process error 3 {}", e);
             return null;
         }
     }
