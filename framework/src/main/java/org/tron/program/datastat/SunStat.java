@@ -16,12 +16,23 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j(topic = "Data")
 public class SunStat {
 
   public static void init() {
+
+
+    String[] sz = SourceData.s.split("\n");
+    Set<String> set = new HashSet<>();
+    for(int i = 0; i < sz.length; i++) {
+      set.add(sz[i]);
+    }
+    logger.info("## set size {}", set.size());
+
     ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
 //    ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("52.196.244.176:50051")
@@ -96,6 +107,12 @@ public class SunStat {
           logger.info("{}", tmp);
           if(tmp.getRightTx() != null && tmp.getLeftTx() != null && tmp.getTxs().size() > 0) {
             results.add(tmp);
+            String txid = new TransactionCapsule(tmp.getRightTx()).getTransactionId().toString();
+            if(set.contains(txid)){
+              logger.info("##### yes {}", txid);
+            }else{
+              logger.info("##### no {}", txid);
+            }
           }
           tmp = new Result();
           param = null;
