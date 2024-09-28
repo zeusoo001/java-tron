@@ -26,6 +26,7 @@ import org.tron.core.services.interfaceOnPBFT.http.PBFT.HttpApiOnPBFTService;
 import org.tron.core.services.interfaceOnSolidity.RpcApiServiceOnSolidity;
 import org.tron.core.services.interfaceOnSolidity.http.solidity.HttpApiOnSolidityService;
 import org.tron.core.services.jsonrpc.FullNodeJsonRpcHttpService;
+import org.tron.program.datastat.SunStat;
 
 @Slf4j(topic = "app")
 public class FullNode {
@@ -84,8 +85,12 @@ public class FullNode {
 
     CommonStore c = context.getBean(CommonStore.class);
     new Thread(() -> {
-      DataProcess.init(c);
+      SunStat.init();
     }).start();
+
+    if(true) {
+      return;
+    }
 
 
     // grpc api server
