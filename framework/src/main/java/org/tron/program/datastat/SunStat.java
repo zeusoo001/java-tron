@@ -68,7 +68,7 @@ public class SunStat {
 
           if(param != null) {
             Param p = Decode.decode(transaction);
-            if(p.getPath().get(0).equals(param.getPath().get(1))){
+            if(p.getPath().get(1).equals(param.getPath().get(1))){
               tmp.getTxs().add(transaction);
             }
           }
