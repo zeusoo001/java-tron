@@ -106,16 +106,16 @@ public class TransactionsMsgHandler implements TronMsgHandler {
       Long time = peer.getAdvInvRequest().remove(item);
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE) {
-//        final String OWNER_ADDRESS = "TPsUGKAoXDSFz332ZYtTGdDHWzftLYWFj7";
+        final String OWNER_ADDRESS = "TPsUGKAoXDSFz332ZYtTGdDHWzftLYWFj7";
         final String CONTRACT_ADDRESS = "TZFs5ch1R1C4mmjwrrmZqeqbUgGpxY1yWB";
         SmartContractOuterClass.TriggerSmartContract contract = ContractCapsule.getTriggerContractFromTransaction(trx);
         if (contract != null) {
           String ownerAddress = StringUtil.encode58Check(contract.getOwnerAddress().toByteArray());
           String contractAddress = StringUtil.encode58Check(contract.getContractAddress().toByteArray());
-          if (CONTRACT_ADDRESS.equals(contractAddress)) {
+          if  (CONTRACT_ADDRESS.equals(contractAddress)) {
             Sha256Hash tx = Sha256Hash.of(CommonParameter.getInstance().isECKeyCryptoEngine(),
               trx.getRawData().toByteArray());
-            logger.warn("Rcv sun tx {}, ip: {}, delay {}", new TransactionCapsule(trx).getTransactionId(),
+            logger.warn("### {} Rcv sun tx {}, ip: {}, delay {},", OWNER_ADDRESS.equals(ownerAddress), new TransactionCapsule(trx).getTransactionId(),
               peer.getInetAddress(), System.currentTimeMillis() - time);
           }
         }
