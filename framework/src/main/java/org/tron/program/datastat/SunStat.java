@@ -97,6 +97,8 @@ public class SunStat {
           if(tmp.getRightTx() != null && tmp.getLeftTx() != null && tmp.getTxs().size() > 0) {
             results.add(tmp);
           }
+          tmp = new Result();
+          param = null;
 
 //          String url = "http://44.230.214.237:8090/wallet/record?value=" + new TransactionCapsule(tmp.getTxs().get(0)).getTransactionId();
 //          System.out.println(url);
