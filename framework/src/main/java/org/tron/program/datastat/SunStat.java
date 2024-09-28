@@ -15,6 +15,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,14 +26,26 @@ import java.util.Set;
 @Slf4j(topic = "Data")
 public class SunStat {
 
-  public static void init() {
+  public static void init() throws Exception {
 
 
-    String[] sz = SourceData.s.split("\n");
+
     Set<String> set = new HashSet<>();
+    String path = "/data/test/java-tron/f";
+//                String path = "/Users/adiswu/git/develop-1/java-tron/f";
+//
+    logger.info("path {}", path);
+
+    byte[] bytes = Files.readAllBytes(Paths.get(path));
+
+    String content = new String(bytes, StandardCharsets.UTF_8);
+
+    String[] sz = content.split("\n");
+
     for(int i = 0; i < sz.length; i++) {
       set.add(sz[i]);
     }
+
     logger.info("## set size {}", set.size());
 
     ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
