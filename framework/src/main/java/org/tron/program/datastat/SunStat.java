@@ -115,19 +115,23 @@ public class SunStat {
           }
         }
 
+        int c1 = 0, c2 = 0, c3 = 0;
         if (tmp.getRightTx() != null) {
+          c1++;
 //          System.out.println((tmp.getRightTx() != null)
 //            + ", " + (tmp.getLeftTx() != null) + ", " + tmp.getTxs().size());
 //          System.out.println(tmp);
-          logger.info("{}", tmp);
+
           if(tmp.getRightTx() != null && tmp.getLeftTx() != null && tmp.getTxs().size() > 0) {
+            if(tmp.getTxs().size() == 1)c2++;
             results.add(tmp);
             String txid = new TransactionCapsule(tmp.getRightTx()).getTransactionId().toString();
             if(set.contains(txid)){
               logger.info("##### yes {}", txid);
             }else{
-              logger.info("##### no {}", txid);
+              logger.info("##### no {}，{}", txid, tmp.getTxs().size() == 1);
             }
+            logger.info("{}", tmp);
           }
           tmp = new Result();
           param = null;
@@ -138,6 +142,8 @@ public class SunStat {
 //          BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 //          System.out.println(in.readLine());
         }
+
+        logger.info("### c1 {}, c2 {}", c1, c2);
 
       }catch (Exception e) {
 
