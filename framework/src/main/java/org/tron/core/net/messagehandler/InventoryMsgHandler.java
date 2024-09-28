@@ -7,11 +7,15 @@ import org.tron.common.utils.Sha256Hash;
 import org.tron.core.config.args.Args;
 import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.message.TronMessage;
+import org.tron.core.net.message.adv.FetchInvDataMessage;
 import org.tron.core.net.message.adv.InventoryMessage;
 import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.adv.AdvService;
 import org.tron.protos.Protocol.Inventory.InventoryType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j(topic = "net")
 @Component
@@ -35,10 +39,17 @@ public class InventoryMsgHandler implements TronMsgHandler {
       return;
     }
 
+    List<Sha256Hash> list = new ArrayList<>();
     for (Sha256Hash id : inventoryMessage.getHashList()) {
       Item item = new Item(id, type);
       peer.getAdvInvReceive().put(item, System.currentTimeMillis());
-      advService.addInv(item);
+      if(advService.addInv(item)) {
+        list.add(id);
+        peer.getAdvInvRequest().put(new Item(id, InventoryType.TRX), System.currentTimeMillis());
+      }
+    }
+    if(list.size() > 0) {
+      peer.sendMessage(new FetchInvDataMessage(list, InventoryType.TRX));
     }
   }
 

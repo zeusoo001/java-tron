@@ -7,9 +7,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.common.es.ExecutorServiceManager;
+import org.tron.common.parameter.CommonParameter;
+import org.tron.common.utils.Sha256Hash;
+import org.tron.common.utils.StringUtil;
+import org.tron.core.capsule.ContractCapsule;
+import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.config.args.Args;
 import org.tron.core.exception.P2pException;
 import org.tron.core.exception.P2pException.TypeEnum;
@@ -24,6 +30,7 @@ import org.tron.protos.Protocol.Inventory.InventoryType;
 import org.tron.protos.Protocol.ReasonCode;
 import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract.ContractType;
+import org.tron.protos.contract.SmartContractOuterClass;
 
 @Slf4j(topic = "net")
 @Component
@@ -96,7 +103,23 @@ public class TransactionsMsgHandler implements TronMsgHandler {
         throw new P2pException(TypeEnum.BAD_MESSAGE,
             "trx: " + msg.getMessageId() + " without request.");
       }
-      peer.getAdvInvRequest().remove(item);
+      Long time = peer.getAdvInvRequest().remove(item);
+      int type = trx.getRawData().getContract(0).getType().getNumber();
+      if (type == ContractType.TriggerSmartContract_VALUE) {
+//        final String OWNER_ADDRESS = "TPsUGKAoXDSFz332ZYtTGdDHWzftLYWFj7";
+        final String CONTRACT_ADDRESS = "TZFs5ch1R1C4mmjwrrmZqeqbUgGpxY1yWB";
+        SmartContractOuterClass.TriggerSmartContract contract = ContractCapsule.getTriggerContractFromTransaction(trx);
+        if (contract != null) {
+          String ownerAddress = StringUtil.encode58Check(contract.getOwnerAddress().toByteArray());
+          String contractAddress = StringUtil.encode58Check(contract.getContractAddress().toByteArray());
+          if (CONTRACT_ADDRESS.equals(contractAddress)) {
+            Sha256Hash tx = Sha256Hash.of(CommonParameter.getInstance().isECKeyCryptoEngine(),
+              trx.getRawData().toByteArray());
+            logger.warn("Rcv sun tx {}, ip: {}, delay {}", new TransactionCapsule(trx).getTransactionId(),
+              peer.getInetAddress(), System.currentTimeMillis() - time);
+          }
+        }
+      }
     }
   }
 
