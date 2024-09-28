@@ -62,13 +62,13 @@ public class SunStat {
             continue;
           }
 
-          if (transaction.getRet(0).toString().toLowerCase().contains("success")) {
+          if (!transaction.getRet(0).toString().toLowerCase().contains("success")) {
             continue;
           }
 
           if(param != null) {
             Param p = Decode.decode(transaction);
-            if(p.getPath().get(1).equals(param.getPath().get(1)) && p.getCallValue() >= param.getCallValue()){
+            if(p.getPath().get(1).equals(param.getPath().get(1))){
               tmp.getTxs().add(transaction);
             }
           }
