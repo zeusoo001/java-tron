@@ -35,8 +35,8 @@ public class SunStat2 {
     List<TrxDetail> details = new ArrayList<>();
 
     Set<String> set = new HashSet<>();
-//    String path = "/data/test/java-tron/f";
-    String path = "/Users/adiswu/git/develop-1/java-tron/f";
+    String path = "/data/test/java-tron/f";
+//    String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
     String ssss = "e3fb78d36509e9395704237bac7583cc880b6007f06a1421ebf754d97bab241d";
 
@@ -66,8 +66,8 @@ public class SunStat2 {
     WalletGrpc.WalletBlockingStub blockingStub = WalletGrpc.newBlockingStub(channelFull2);
 
     long startNum = 65626710;
-//    long endNum = 65647996;
-    long endNum = 65626810;
+    long endNum = 65647996;
+//    long endNum = 65626810;
 
     for(long i = startNum; i < endNum; i++) {
       try {
