@@ -100,7 +100,7 @@ public class SunStat3 {
           TrxDetail detail = new TrxDetail();
           detail.setTxId(capsule.getTransactionId().toString());
           if(param == null) {
-            detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
+            detail.setBlockNum(SunStat2.get(block.getBlockHeader().getRawData().getNumber()) );
             detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
             detail.setWitness(Hex.toHexString(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
             detail.setIndex(index);
@@ -110,7 +110,7 @@ public class SunStat3 {
             detail.setCallValue(param.getCallValue());
             detail.setIndex(index);
             detail.setRet(transaction.getRet(0).toString());
-            detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
+            detail.setBlockNum(SunStat2.get(block.getBlockHeader().getRawData().getNumber()));
             detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
             detail.setWitness(Hex.toHexString(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
             if (param.getPath().get(1).toLowerCase().equals("41891cdb91d149f23b1a45d9c5ca78a88d0cb44c18")) {
