@@ -24,10 +24,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j(topic = "Data")
 public class SunStat2 {
@@ -39,7 +37,6 @@ public class SunStat2 {
 
     List<TrxDetail> details = new ArrayList<>();
 
-    Set<String> set = new HashSet<>();
     String path = "/data/test/java-tron/f";
 //    String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
@@ -53,15 +50,17 @@ public class SunStat2 {
 
     String[] sz = content.split("\n");
 
+    Map<String, Long> map = new ConcurrentHashMap<>();
+
     for(int i = 0; i < sz.length; i++) {
 //      if(ssss.equals(sz[i].trim())) {
 //        logger.info("oooooooooooo");
 //        break;
 //      }
-      set.add(sz[i].trim());
+      map.put(sz[i].trim(), 0l);
     }
 
-    logger.info("set size {}, total {}", set.size(), sz.length);
+    logger.info("set size {}, total {}", map.size(), sz.length);
 
     ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
@@ -97,9 +96,12 @@ public class SunStat2 {
             continue;
           }
 
-          if(set.contains(capsule.getTransactionId().toString())){
+          Long l = map.get(capsule.getTransactionId().toString());
+          if(l == null){
             continue;
           }
+
+          map.remove(capsule.getTransactionId().toString());
 
           Param param = Decode.decode(transaction);
           TrxDetail detail = new TrxDetail();
@@ -135,6 +137,8 @@ public class SunStat2 {
     details.forEach(d -> {
       logger.info("{}", d);
     });
+
+    map.keySet().forEach(v -> logger.info("### {}", v));
   }
 
   public static String get(long timestamp) {
