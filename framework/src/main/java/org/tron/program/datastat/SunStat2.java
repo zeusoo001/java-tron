@@ -54,10 +54,10 @@ public class SunStat2 {
     String[] sz = content.split("\n");
 
     for(int i = 0; i < sz.length; i++) {
-      if(ssss.equals(sz[i].trim())) {
-        logger.info("oooooooooooo");
-        break;
-      }
+//      if(ssss.equals(sz[i].trim())) {
+//        logger.info("oooooooooooo");
+//        break;
+//      }
       set.add(sz[i].trim());
     }
 
