@@ -98,6 +98,7 @@ public class SunStat2 {
 
           Param param = Decode.decode(transaction);
           TrxDetail detail = new TrxDetail();
+          detail.setTxId(capsule.getTransactionId().toString());
           if(param == null) {
             detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
             detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());

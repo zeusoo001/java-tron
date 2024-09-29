@@ -6,6 +6,7 @@ import java.math.BigInteger;
 
 @Data
 public class TrxDetail {
+  private String txId;
   private long blockNum;
   private long blockTime;
   private BigInteger amount;
