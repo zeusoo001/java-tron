@@ -24,27 +24,9 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j(topic = "Data")
-public class SunStat {
+public class SunStat4 {
 
-  public static List<Result> init() throws Exception {
-
-    Set<String> set = new HashSet<>();
-    String path = "/data/test/java-tron/f";
-//                String path = "/Users/adiswu/git/develop-1/java-tron/f";
-//
-    logger.info("path {}", path);
-
-    byte[] bytes = Files.readAllBytes(Paths.get(path));
-
-    String content = new String(bytes, StandardCharsets.UTF_8);
-
-    String[] sz = content.split("\n");
-
-    for(int i = 0; i < sz.length; i++) {
-      set.add(sz[i]);
-    }
-
-    logger.info("## set size {}", set.size());
+  public static List<Result2> init() throws Exception {
 
     ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
@@ -53,12 +35,12 @@ public class SunStat {
 
     WalletGrpc.WalletBlockingStub blockingStub = WalletGrpc.newBlockingStub(channelFull2);
 
-    long startNum = 65380742;
-    long endNum = 65582286;
+    long startNum = 65626710;
+    long endNum = 65647996;
 
-    List<Result> results = new ArrayList<>();
+    List<Result2> results = new ArrayList<>();
 
-    Result tmp = new Result();
+    Result2 tmp = new Result2();
     Param param = null;
     for(long i = startNum; i < endNum; i++) {
       try {
@@ -93,7 +75,7 @@ public class SunStat {
           if(param != null) {
             Param p = Decode.decode(transaction);
             if(p.getPath().get(1).equals(param.getPath().get(1))){
-              tmp.getTxs().add(transaction);
+              tmp.getTxs().add(new TransactionCapsule(transaction).getTransactionId().toString());
             }
           }
 
@@ -102,13 +84,13 @@ public class SunStat {
           }
 
           if(tmp.getLeftTx() == null) {
-            tmp.setLeftTx(transaction);
+            tmp.setLeftTx(new TransactionCapsule(transaction).getTransactionId().toString());
             param = Decode.decode(transaction);
             continue;
           }
 
           if(tmp.getRightTx() == null) {
-            tmp.setRightTx(transaction);
+            tmp.setRightTx(new TransactionCapsule(transaction).getTransactionId().toString());
             break;
           }
         }
@@ -116,22 +98,11 @@ public class SunStat {
         int c1 = 0, c2 = 0, c3 = 0;
         if (tmp.getRightTx() != null) {
           c1++;
-//          System.out.println((tmp.getRightTx() != null)
-//            + ", " + (tmp.getLeftTx() != null) + ", " + tmp.getTxs().size());
-//          System.out.println(tmp);
-
           if(tmp.getRightTx() != null && tmp.getLeftTx() != null && tmp.getTxs().size() > 0) {
             if(tmp.getTxs().size() == 1)c2++;
             results.add(tmp);
-            String txid = new TransactionCapsule(tmp.getRightTx()).getTransactionId().toString();
-            if(set.contains(txid)){
-              logger.info("##### yes {}", txid);
-            }else{
-              logger.info("##### no {}，{}", txid, tmp.getTxs().size() == 1);
-            }
-            logger.info("{}", tmp);
           }
-          tmp = new Result();
+          tmp = new Result2();
           param = null;
 
 //          String url = "http://44.230.214.237:8090/wallet/record?value=" + new TransactionCapsule(tmp.getTxs().get(0)).getTransactionId();
