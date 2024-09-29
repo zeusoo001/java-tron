@@ -7,8 +7,8 @@ import java.math.BigInteger;
 @Data
 public class TrxDetail {
   private String txId;
-  private String blockNum;
-  private long blockTime;
+  private long blockNum;
+  private String blockTime;
   private BigInteger amount;
   private long callValue;
   private String token;
