@@ -58,10 +58,10 @@ public class SunStat2 {
 
     logger.info("set size {}, total {}", set.size(), sz.length);
 
-//    ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
-//      .usePlaintext().build();
-    ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("52.196.244.176:50051")
+    ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
+//    ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("52.196.244.176:50051")
+//      .usePlaintext().build();
 
     WalletGrpc.WalletBlockingStub blockingStub = WalletGrpc.newBlockingStub(channelFull2);
 
