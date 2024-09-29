@@ -7,6 +7,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.tron.api.GrpcAPI;
 import org.tron.api.WalletGrpc;
 import org.tron.common.utils.JsonUtil;
+import org.tron.common.utils.StringUtil;
 import org.tron.core.capsule.ContractCapsule;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.protos.Protocol;
@@ -99,25 +100,19 @@ public class SunStat2 {
           Param param = Decode.decode(transaction);
           TrxDetail detail = new TrxDetail();
           detail.setTxId(capsule.getTransactionId().toString());
-          if(param == null) {
-            detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
-            detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
-            detail.setWitness(Hex.toHexString(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
-            detail.setIndex(index);
-            detail.setRet(transaction.getRet(0).toString());
-          } else {
+          detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
+          detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
+          detail.setWitness(StringUtil.encode58Check(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
+          detail.setIndex(index);
+          detail.setRet(transaction.getRet(0).toString());
+          if(param != null) {
             detail.setAmount(param.getAmount());
             detail.setCallValue(param.getCallValue());
-            detail.setIndex(index);
-            detail.setRet(transaction.getRet(0).toString());
-            detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
-            detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
-            detail.setWitness(Hex.toHexString(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
             if (param.getPath().get(1).toLowerCase().equals("41891cdb91d149f23b1a45d9c5ca78a88d0cb44c18")) {
-              detail.setToken(param.getPath().get(0));
+              detail.setToken(StringUtil.encode58Check(Hex.decode(param.getPath().get(0))));
               detail.setBuy(false);
             } else {
-              detail.setToken(param.getPath().get(1));
+              detail.setToken(StringUtil.encode58Check(Hex.decode(param.getPath().get(1))));
               detail.setBuy(true);
             }
           }
