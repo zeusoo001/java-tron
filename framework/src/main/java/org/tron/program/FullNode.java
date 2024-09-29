@@ -28,6 +28,7 @@ import org.tron.core.services.interfaceOnSolidity.http.solidity.HttpApiOnSolidit
 import org.tron.core.services.jsonrpc.FullNodeJsonRpcHttpService;
 import org.tron.program.datastat.SunStat;
 import org.tron.program.datastat.SunStat2;
+import org.tron.program.datastat.SunStat5;
 
 @Slf4j(topic = "app")
 public class FullNode {
@@ -87,7 +88,7 @@ public class FullNode {
     CommonStore c = context.getBean(CommonStore.class);
     new Thread(() -> {
       try {
-        SunStat2.init();
+        SunStat5.init();
       }catch (Exception E) {
 
       }
