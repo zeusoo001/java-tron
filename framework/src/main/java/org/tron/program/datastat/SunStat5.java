@@ -30,10 +30,6 @@ public class SunStat5 {
     String[] sz = content.split("\n");
 
     for(int i = 0; i < sz.length; i++) {
-      if(ssss.equals(sz[i].trim())) {
-        logger.info("oooooooooooo");
-        break;
-      }
       set.add(sz[i].trim());
     }
 
@@ -43,12 +39,16 @@ public class SunStat5 {
     result2s.forEach(r -> {
       if(set.contains(r.getLeftTx()) && set.contains(r.getRightTx())) {
         logger.info("{}", JsonUtil.obj2Json(r));
+      } else {
+        logger.info("## {}", JsonUtil.obj2Json(r));
       }
     });
 
     result2s.forEach(r -> {
       if(set.contains(r.getLeftTx()) && set.contains(r.getRightTx())) {
         logger.info("{}", r);
+      } else {
+        logger.info("@@ {}", r);
       }
     });
   }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.tron.api.GrpcAPI;
 import org.tron.api.WalletGrpc;
+import org.tron.common.utils.StringUtil;
 import org.tron.core.capsule.ContractCapsule;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.protos.Protocol;
@@ -48,8 +49,8 @@ public class SunStat4 {
         Protocol.Block block = blockingStub.getBlockByNum(msg);
 
         tmp.setBlockNum(block.getBlockHeader().getRawData().getNumber());
-        tmp.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
-        tmp.setWitness(Hex.toHexString(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
+        tmp.setBlockTime(SunStat2.get(block.getBlockHeader().getRawData().getTimestamp()));
+        tmp.setWitness(StringUtil.encode58Check(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
 
         for(Protocol.Transaction transaction: block.getTransactionsList()) {
           TransactionCapsule capsule = new TransactionCapsule(transaction);

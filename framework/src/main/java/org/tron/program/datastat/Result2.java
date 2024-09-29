@@ -13,7 +13,7 @@ public class Result2 {
   private List<String> txs = new ArrayList<>();
   private String rightTx;
   private long blockNum;
-  private long blockTime;
+  private String blockTime;
   private String witness;
 
   public String toString() {
