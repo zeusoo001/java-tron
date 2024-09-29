@@ -19,7 +19,7 @@ public class TrxDetail {
 
   public String toString() {
     StringBuilder b = new StringBuilder();
-    b.append(blockNum).append(",").append(blockTime).append(",")
+    b.append(txId).append(",").append(blockNum).append(",").append(blockTime).append(",")
       .append(amount).append(",").append(callValue).append(",")
       .append(token).append(",").append(index).append(",").append(isBuy).append(",").append(witness).append(",").append(ret);
 
