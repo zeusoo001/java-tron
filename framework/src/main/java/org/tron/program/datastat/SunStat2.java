@@ -20,6 +20,10 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -100,7 +104,7 @@ public class SunStat2 {
           Param param = Decode.decode(transaction);
           TrxDetail detail = new TrxDetail();
           detail.setTxId(capsule.getTransactionId().toString());
-          detail.setBlockNum(block.getBlockHeader().getRawData().getNumber());
+          detail.setBlockNum(get(block.getBlockHeader().getRawData().getNumber()));
           detail.setBlockTime(block.getBlockHeader().getRawData().getTimestamp());
           detail.setWitness(StringUtil.encode58Check(block.getBlockHeader().getRawData().getWitnessAddress().toByteArray()));
           detail.setIndex(index);
@@ -131,5 +135,13 @@ public class SunStat2 {
     details.forEach(d -> {
       logger.info("{}", d);
     });
+  }
+
+  public static String get(long timestamp) {
+    Instant instant = Instant.ofEpochMilli(timestamp);
+
+    LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString();
+
   }
 }
