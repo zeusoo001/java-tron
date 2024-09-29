@@ -57,10 +57,18 @@ public class SunStat2 {
 //        logger.info("oooooooooooo");
 //        break;
 //      }
-      map.put(sz[i].trim(), 0l);
+      if(sz[i].trim().length() != 64) {
+        logger.info(" ## nnn {}", sz[i].trim());
+      }
+      if (map.get(sz[i].trim()) == null) {
+        map.put(sz[i].trim(), 0l);
+      }else {
+        logger.info("### exist {}", sz[i].trim());
+      }
+
     }
 
-    logger.info("set size {}, total {}", map.size(), sz.length);
+    logger.info("map size {}, total {}", map.size(), sz.length);
 
     ManagedChannel channelFull2 = ManagedChannelBuilder.forTarget("127.0.0.1:50051")
       .usePlaintext().build();
@@ -125,7 +133,7 @@ public class SunStat2 {
           details.add(detail);
         }
       }catch (Exception e) {
-        System.out.println(e);
+        logger.info("### failed {}", e.getMessage());
         e.printStackTrace();
       }
     }
