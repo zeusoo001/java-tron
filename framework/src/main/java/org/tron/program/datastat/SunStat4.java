@@ -36,8 +36,8 @@ public class SunStat4 {
 
     WalletGrpc.WalletBlockingStub blockingStub = WalletGrpc.newBlockingStub(channelFull2);
 
-    long startNum = 65626710;
-    long endNum = 65647996;
+    long startNum = 65697155;
+    long endNum = 65899975;
 
     List<Result2> results = new ArrayList<>();
 

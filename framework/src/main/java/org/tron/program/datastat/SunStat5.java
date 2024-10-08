@@ -16,10 +16,9 @@ public class SunStat5 {
   public static void init() throws Exception  {
 
     Set<String> set = new HashSet<>();
-    String path = "/data/test/java-tron/f";
+    String path = "/data/FullNode/final_data.csv.all";
 //    String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
-    String ssss = "e3fb78d36509e9395704237bac7583cc880b6007f06a1421ebf754d97bab241d";
 
     logger.info("path {}", path);
 
@@ -30,11 +29,11 @@ public class SunStat5 {
     String[] sz = content.split("\n");
 
     for(int i = 0; i < sz.length; i++) {
-      set.add(sz[i].trim());
+      set.add(sz[i].split(",")[2].trim());
     }
 
     List<Result2> result2s = SunStat4.init();
-    List<TrxDetail> details = SunStat3.init();
+//    List<TrxDetail> details = SunStat3.init();
 
     result2s.forEach(r -> {
       if(set.contains(r.getLeftTx()) && set.contains(r.getRightTx())) {
