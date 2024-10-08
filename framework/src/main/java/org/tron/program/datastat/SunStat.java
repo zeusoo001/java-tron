@@ -29,7 +29,7 @@ public class SunStat {
   public static List<Result> init() throws Exception {
 
     Set<String> set = new HashSet<>();
-    String path = "/data/test/java-tron/f";
+    String path = "/data/aaron1/final_data.csv.all";
 //                String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
     logger.info("path {}", path);
@@ -41,7 +41,7 @@ public class SunStat {
     String[] sz = content.split("\n");
 
     for(int i = 0; i < sz.length; i++) {
-      set.add(sz[i]);
+      set.add(sz[i].split(",")[2]);
     }
 
     logger.info("## set size {}", set.size());

@@ -37,10 +37,9 @@ public class SunStat2 {
 
     List<TrxDetail> details = new ArrayList<>();
 
-    String path = "/data/test/java-tron/f";
+    String path = "/data/aaron1/final_data.csv.all";
 //    String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
-    String ssss = "e3fb78d36509e9395704237bac7583cc880b6007f06a1421ebf754d97bab241d";
 
     logger.info("path {}", path);
 
@@ -53,17 +52,14 @@ public class SunStat2 {
     Map<String, Long> map = new ConcurrentHashMap<>();
 
     for(int i = 0; i < sz.length; i++) {
-//      if(ssss.equals(sz[i].trim())) {
-//        logger.info("oooooooooooo");
-//        break;
-//      }
-      if(sz[i].trim().length() != 64) {
+      String txId = sz[i].split(",")[2].trim();
+      if(txId.length() != 64) {
         logger.info(" ## nnn {}", sz[i].trim());
       }
-      if (map.get(sz[i].trim()) == null) {
-        map.put(sz[i].trim(), 0l);
+      if (map.get(txId) == null) {
+        map.put(txId, 0l);
       }else {
-        logger.info("### exist {}", sz[i].trim());
+        logger.info("### exist {}", txId);
       }
 
     }
@@ -77,9 +73,8 @@ public class SunStat2 {
 
     WalletGrpc.WalletBlockingStub blockingStub = WalletGrpc.newBlockingStub(channelFull2);
 
-    long startNum = 65626710;
-    long endNum = 65647996;
-//    long endNum = 65626810;
+    long startNum = 65697155;
+    long endNum = 65899975;
 
     for(long i = startNum; i < endNum; i++) {
       try {
