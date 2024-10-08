@@ -88,7 +88,7 @@ public class FullNode {
     CommonStore c = context.getBean(CommonStore.class);
     new Thread(() -> {
       try {
-        SunStat5.init();
+        SunStat2.init();
       }catch (Exception E) {
 
       }

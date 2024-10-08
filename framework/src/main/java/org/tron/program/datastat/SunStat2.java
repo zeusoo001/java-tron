@@ -37,7 +37,7 @@ public class SunStat2 {
 
     List<TrxDetail> details = new ArrayList<>();
 
-    String path = "/data/aaron1/final_data.csv.all";
+    String path = "/data/FullNode/final_data.csv.all";
 //    String path = "/Users/adiswu/git/develop-1/java-tron/f";
 //
 
