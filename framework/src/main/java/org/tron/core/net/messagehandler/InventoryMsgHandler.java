@@ -36,6 +36,7 @@ public class InventoryMsgHandler implements TronMsgHandler {
     }
 
     for (Sha256Hash id : inventoryMessage.getHashList()) {
+      logger.info("#### rcv inv {}, peer {}", id.toString(), peer.getInetAddress());
       Item item = new Item(id, type);
       peer.getAdvInvReceive().put(item, System.currentTimeMillis());
       advService.addInv(item);

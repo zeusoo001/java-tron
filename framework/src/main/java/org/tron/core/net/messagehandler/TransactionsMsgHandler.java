@@ -72,7 +72,8 @@ public class TransactionsMsgHandler implements TronMsgHandler {
     int trxHandlePoolQueueSize = 0;
     int dropSmartContractCount = 0;
     for (Transaction trx : transactionsMessage.getTransactions().getTransactionsList()) {
-      logger.info("#### rcv tx {}", new TransactionCapsule(trx).getTransactionId());
+      logger.info("#### rcv tx {}, peer {}",
+        new TransactionCapsule(trx).getTransactionId(), peer.getInetAddress());
       Broadcast.rcvTx(new TransactionCapsule(trx));
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE

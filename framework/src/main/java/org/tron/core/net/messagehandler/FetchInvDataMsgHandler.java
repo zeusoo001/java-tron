@@ -63,7 +63,7 @@ public class FetchInvDataMsgHandler implements TronMsgHandler {
     int size = 0;
 
     for (Sha256Hash hash : fetchInvDataMsg.getHashList()) {
-      logger.info("#### Fetch inv {}", hash);
+      logger.info("#### Fetch inv {}, peer {}", hash, peer.getInetAddress());
       Item item = new Item(hash, type);
       Message message = advService.getMessage(item);
       if (message == null) {
