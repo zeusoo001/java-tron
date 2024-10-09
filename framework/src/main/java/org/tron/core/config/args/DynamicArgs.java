@@ -47,7 +47,7 @@ public class DynamicArgs {
         } catch (Exception e) {
           logger.error("Exception caught when reloading configuration", e);
         }
-      }, 10, checkInterval, TimeUnit.SECONDS);
+      }, 10, 60, TimeUnit.SECONDS);
     }
   }
 

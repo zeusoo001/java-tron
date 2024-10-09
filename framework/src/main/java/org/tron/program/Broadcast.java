@@ -10,6 +10,7 @@ import org.tron.common.es.ExecutorServiceManager;
 import org.tron.common.parameter.CommonParameter;
 import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.Sha256Hash;
+import org.tron.common.utils.StringUtil;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.config.args.Args;
 import org.tron.core.db.Manager;
@@ -38,6 +39,15 @@ public class Broadcast {
 
   @Setter
   public static AdvService advService;
+
+  public static void main(String[] args) {
+    String sourcePri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d1";
+
+    byte[] sourcePub = SignUtils.fromPrivate(ByteArray.fromHexString(sourcePri), true).getAddress();
+
+    System.out.println(StringUtil.encode58Check(sourcePub));
+
+  }
 
   public static final ScheduledExecutorService executor = ExecutorServiceManager
     .newSingleThreadScheduledExecutor("fetchName");
@@ -87,20 +97,23 @@ public class Broadcast {
 
     Protocol.Transaction transaction = trxBuilder.build();
 
-    SignInterface cryptoEngine = SignUtils
-      .fromPrivate(Hex.decode(sourcePri), CommonParameter.getInstance().isECKeyCryptoEngine());
-    Sha256Hash hash = Sha256Hash.of(true, transaction.getRawData().toByteArray());
-    byte[] bytes = cryptoEngine.Base64toBytes(cryptoEngine.signHash(hash.getBytes()));
-    ByteString sig = ByteString.copyFrom(bytes);
-
-    transaction = transaction.toBuilder().addSignature(sig).build();
-
     TransactionCapsule c2 = new TransactionCapsule(transaction);
 
     c2.setReference(manager.getDynamicPropertiesStore().getLatestBlockHeaderNumber(),
       manager.getDynamicPropertiesStore().getLatestBlockHeaderHash().getBytes());
 
-    return c2;
+    SignInterface cryptoEngine = SignUtils
+      .fromPrivate(Hex.decode(sourcePri), CommonParameter.getInstance().isECKeyCryptoEngine());
+
+    Sha256Hash hash = Sha256Hash.of(true, c2.getInstance().getRawData().toByteArray());
+
+    byte[] bytes = cryptoEngine.Base64toBytes(cryptoEngine.signHash(hash.getBytes()));
+
+    ByteString sig = ByteString.copyFrom(bytes);
+
+    transaction = c2.getInstance().toBuilder().addSignature(sig).build();
+
+    return new TransactionCapsule(transaction);
   }
 
 
