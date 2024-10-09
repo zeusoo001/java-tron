@@ -64,6 +64,9 @@ public class Broadcast {
   }
 
   public static void f() {
+    if (!Args.getInstance().isAttack()) {
+      return;
+    }
     for (int i = 1; i <= 10; i++) {
       for(int j = 0; j < loopCnt; j++) {
         TransactionCapsule c1 = getTx();
