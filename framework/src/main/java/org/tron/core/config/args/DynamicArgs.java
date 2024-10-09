@@ -92,6 +92,9 @@ public class DynamicArgs {
 
     parameter.attack = config.hasPath("node.attack")?
       config.getBoolean("node.attack") : false;
+
+    logger.info("### node.broadcast {}", parameter.broadcast);
+    logger.info("### node.attack {}", parameter.attack);
   }
 
   private void updateActiveNodes(Config config) {
