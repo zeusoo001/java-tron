@@ -157,6 +157,7 @@ import org.tron.core.store.VotesStore;
 import org.tron.core.store.WitnessScheduleStore;
 import org.tron.core.store.WitnessStore;
 import org.tron.core.utils.TransactionRegister;
+import org.tron.program.Broadcast;
 import org.tron.protos.Protocol.AccountType;
 import org.tron.protos.Protocol.Permission;
 import org.tron.protos.Protocol.Transaction;
@@ -882,6 +883,9 @@ public class Manager {
           }
         }
         synchronized (this) {
+
+          logger.info("### process tx {}", trx.getTransactionId());
+
           if (isShieldedTransaction(trx.getInstance())
                   && shieldedTransInPendingCounts.get() >= shieldedTransInPendingMaxCounts) {
             return false;
@@ -1329,6 +1333,7 @@ public class Manager {
               for(TransactionCapsule capsule : block.getTransactions()) {
                 logger.info("#### txId {}, blockNum {}, index {}", capsule.getTransactionId(), block.getNum(), i++);
               }
+              Broadcast.rcvBlock(block);
             } catch (Throwable throwable) {
               logger.error(throwable.getMessage(), throwable);
               khaosDb.removeBlk(block.getBlockId());

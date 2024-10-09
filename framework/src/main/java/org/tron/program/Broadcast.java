@@ -11,6 +11,7 @@ import org.tron.common.parameter.CommonParameter;
 import org.tron.common.utils.ByteArray;
 import org.tron.common.utils.Sha256Hash;
 import org.tron.common.utils.StringUtil;
+import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.config.args.Args;
 import org.tron.core.db.Manager;
@@ -19,7 +20,8 @@ import org.tron.core.net.service.adv.AdvService;
 import org.tron.protos.Protocol;
 import org.tron.protos.contract.BalanceContract;
 
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +42,87 @@ public class Broadcast {
   @Setter
   public static AdvService advService;
 
+  public static Map<Integer, Integer> map = new HashMap<>();
+
+  public static Map<Integer, List<XXX>> result = new HashMap<>();
+
+  public static Map<Sha256Hash, TransactionCapsule> tmpTx = new ConcurrentHashMap<>();
+
+  public static int loopCnt = 1000;
+
+  static {
+    map.put(1, 5);
+    map.put(2, 10);
+    map.put(3, 30);
+    map.put(4, 50);
+    map.put(5, 100);
+    map.put(6, 150);
+    map.put(7, 200);
+    map.put(8, 300);
+    map.put(9, 500);
+    map.put(10, 1000);
+  }
+
+  public static void f() {
+    for (int i = 1; i <= 10; i++) {
+      for(int j = 0; j < loopCnt; j++) {
+        TransactionCapsule c1 = getTx();
+        TransactionCapsule c2 = getTx();
+
+        List<XXX> list = result.get(i);
+        if (list == null) {
+          list = new ArrayList<>();
+          result.put(i, list);
+        }
+        list.add(new XXX(c1, c2));
+
+        tmpTx.put(c1.getTransactionId(), c1);
+        tmpTx.put(c2.getTransactionId(), c2);
+
+        advService.broadcast(new TransactionMessage(c1.getInstance()));
+        try{ Thread.sleep(map.get(i));}catch (Exception e){}
+        advService.broadcast(new TransactionMessage(c1.getInstance()));
+
+        try{ Thread.sleep(new Random().nextInt(1000));}catch (Exception e){}
+      }
+
+      try{ Thread.sleep(10_000);}catch (Exception e){}
+      stat(i);
+    }
+  }
+
+  public static void stat(int i) {
+    List<XXX> list = result.get(i);
+    int cnt = 0;
+    for(XXX x: list) {
+      if (x.getC1().getBlockNum() <= 0 || x.getC2().getBlockNum() <= 0) {
+        continue;
+      }
+      if (x.getC1().getBlockNum() > x.getC2().getBlockNum()) {
+        cnt++;
+      } else if (x.getC1().getBlockNum() == x.getC2().getBlockNum()) {
+        if (x.getC1().getBlockIndex() > x.getC2().getBlockIndex()) {
+          cnt++;
+        }
+      }
+    }
+    logger.info("###@@@ {}ms, {}, {}", map.get(i), cnt, list.size());
+  }
+
+  public static void rcvBlock(BlockCapsule blockCapsule) {
+    tmpTx.forEach((k, v) -> {
+      int i = 0;
+      for(TransactionCapsule capsule: blockCapsule.getTransactions()) {
+        if (k.equals(capsule.getTransactionId())) {
+          v.setBlockNum(blockCapsule.getNum());
+          v.setBlockIndex(i);
+          tmpTx.remove(k);
+        }
+        i++;
+      }
+    });
+  }
+
   public static void main(String[] args) {
     String sourcePri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d1";
 
@@ -55,11 +138,12 @@ public class Broadcast {
   public static void init() {
     executor.scheduleWithFixedDelay(() -> {
       try {
-        broadcastTx();
+//        broadcastTx();
+        f();
       } catch (Exception exception) {
         logger.error("Spread thread error", exception);
       }
-    }, 60, 1, TimeUnit.SECONDS);
+    }, 60, 3600, TimeUnit.SECONDS);
   }
 
   public static void broadcastTx() {
@@ -81,7 +165,7 @@ public class Broadcast {
 
   private static TransactionCapsule getTx() {
     BalanceContract.TransferContract contract = BalanceContract.TransferContract.newBuilder()
-      .setAmount(1)
+      .setAmount(new Random().nextInt(10000))
       .setOwnerAddress(ByteString.copyFrom(sourcePub))
       .setToAddress(ByteString.copyFrom(desPub)).build();
 
@@ -90,7 +174,7 @@ public class Broadcast {
     Protocol.Transaction.Builder trxBuilder = capsule.getInstance().toBuilder();
 
     Protocol.Transaction.raw.Builder rawBuilder = capsule.getInstance().getRawData().toBuilder()
-      .setExpiration(System.currentTimeMillis() + 3600 * 1000 + new Random().nextInt(100))
+      .setExpiration(System.currentTimeMillis() + 3600 * 1000 + new Random().nextInt(10000))
       .setFeeLimit(50_000_000);
 
     trxBuilder.setRawData(rawBuilder);

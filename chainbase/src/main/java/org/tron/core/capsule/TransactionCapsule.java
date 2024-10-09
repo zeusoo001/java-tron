@@ -99,6 +99,9 @@ public class TransactionCapsule implements ProtoCapsule<Transaction> {
   @Setter
   @Getter
   private long blockNum = -1;
+  @Setter
+  @Getter
+  private long blockIndex = -1;
   @Getter
   @Setter
   private TransactionTrace trxTrace;
