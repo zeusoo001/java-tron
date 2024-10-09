@@ -1325,6 +1325,10 @@ public class Manager {
             try (ISession tmpSession = revokingStore.buildSession()) {
               applyBlock(newBlock, txs);
               tmpSession.commit();
+              int i = 0;
+              for(TransactionCapsule capsule : block.getTransactions()) {
+                logger.info("#### txId {}, blockNum {}, index {}", capsule.getTransactionId(), block.getNum(), i++);
+              }
             } catch (Throwable throwable) {
               logger.error(throwable.getMessage(), throwable);
               khaosDb.removeBlk(block.getBlockId());

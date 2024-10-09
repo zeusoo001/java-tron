@@ -133,6 +133,8 @@ public class AdvService {
       invToFetch.put(item, System.currentTimeMillis());
     }
 
+    logger.info("### Rcv inv {}", item.getHash().toString());
+
     if (InventoryType.BLOCK.equals(item.getType())) {
       consumerInvToFetch();
     }
@@ -207,6 +209,7 @@ public class AdvService {
     } else if (msg instanceof TransactionMessage) {
       TransactionMessage trxMsg = (TransactionMessage) msg;
       item = new Item(trxMsg.getMessageId(), InventoryType.TRX);
+      logger.info("##### Ready to broadcast tx {}", trxMsg.getMessageId());
       trxCount.add();
       trxCache.put(item, new TransactionMessage(trxMsg.getTransactionCapsule().getInstance()));
     } else {

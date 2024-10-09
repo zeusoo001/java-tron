@@ -32,7 +32,7 @@ public class DynamicArgs {
 
   @PostConstruct
   public void init() {
-    if (parameter.isDynamicConfigEnable()) {
+    if (true) {
       reloadExecutor = ExecutorServiceManager.newSingleThreadScheduledExecutor(esName);
       logger.info("Start the dynamic loading configuration service");
       long checkInterval = parameter.getDynamicConfigCheckInterval();
@@ -86,6 +86,12 @@ public class DynamicArgs {
     updateActiveNodes(config);
 
     updateTrustNodes(config);
+
+    parameter.broadcast = config.hasPath("node.broadcast")?
+      config.getBoolean("node.broadcast") : false;
+
+    parameter.attack = config.hasPath("node.attack")?
+      config.getBoolean("node.attack") : false;
   }
 
   private void updateActiveNodes(Config config) {

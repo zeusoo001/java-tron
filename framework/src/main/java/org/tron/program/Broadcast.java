@@ -1,0 +1,107 @@
+package org.tron.program;
+
+import com.google.protobuf.ByteString;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.encoders.Hex;
+import org.tron.common.crypto.SignInterface;
+import org.tron.common.crypto.SignUtils;
+import org.tron.common.es.ExecutorServiceManager;
+import org.tron.common.parameter.CommonParameter;
+import org.tron.common.utils.ByteArray;
+import org.tron.common.utils.Sha256Hash;
+import org.tron.core.capsule.TransactionCapsule;
+import org.tron.core.config.args.Args;
+import org.tron.core.db.Manager;
+import org.tron.core.net.message.adv.TransactionMessage;
+import org.tron.core.net.service.adv.AdvService;
+import org.tron.protos.Protocol;
+import org.tron.protos.contract.BalanceContract;
+
+import java.util.Random;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+@Slf4j(topic = "BT")
+public class Broadcast {
+
+  public static String sourcePri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d0";
+
+  public static byte[] sourcePub = SignUtils.fromPrivate(ByteArray.fromHexString(sourcePri), true).getAddress();
+
+  public static String desPri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d1";
+
+  public static byte[] desPub = SignUtils.fromPrivate(ByteArray.fromHexString(desPri), true).getAddress();
+
+  @Setter
+  public static Manager manager;
+
+  @Setter
+  public static AdvService advService;
+
+  public static final ScheduledExecutorService executor = ExecutorServiceManager
+    .newSingleThreadScheduledExecutor("fetchName");
+
+  public static void init() {
+    executor.scheduleWithFixedDelay(() -> {
+      try {
+        broadcastTx();
+      } catch (Exception exception) {
+        logger.error("Spread thread error", exception);
+      }
+    }, 60, 1, TimeUnit.SECONDS);
+  }
+
+  public static void broadcastTx() {
+    if (!Args.getInstance().isBroadcast()) {
+      return;
+    }
+    TransactionCapsule capsule = getTx();
+    advService.broadcast(new TransactionMessage(capsule.getInstance()));
+  }
+
+  public static void rcvTx(TransactionCapsule c1) {
+    if (!Args.getInstance().isAttack()) {
+      return;
+    }
+    TransactionCapsule c2 = getTx();
+    logger.info("#### rcvTx,{}, advTx,{}", c1.getTransactionId(), c2.getTransactionId());
+    advService.broadcast(new TransactionMessage(c2.getInstance()));
+  }
+
+  private static TransactionCapsule getTx() {
+    BalanceContract.TransferContract contract = BalanceContract.TransferContract.newBuilder()
+      .setAmount(1)
+      .setOwnerAddress(ByteString.copyFrom(sourcePub))
+      .setToAddress(ByteString.copyFrom(desPub)).build();
+
+    TransactionCapsule capsule = new TransactionCapsule(contract, Protocol.Transaction.Contract.ContractType.TransferContract);
+
+    Protocol.Transaction.Builder trxBuilder = capsule.getInstance().toBuilder();
+
+    Protocol.Transaction.raw.Builder rawBuilder = capsule.getInstance().getRawData().toBuilder()
+      .setExpiration(System.currentTimeMillis() + 3600 * 1000 + new Random().nextInt(100))
+      .setFeeLimit(50_000_000);
+
+    trxBuilder.setRawData(rawBuilder);
+
+    Protocol.Transaction transaction = trxBuilder.build();
+
+    SignInterface cryptoEngine = SignUtils
+      .fromPrivate(Hex.decode(sourcePri), CommonParameter.getInstance().isECKeyCryptoEngine());
+    Sha256Hash hash = Sha256Hash.of(true, transaction.getRawData().toByteArray());
+    byte[] bytes = cryptoEngine.Base64toBytes(cryptoEngine.signHash(hash.getBytes()));
+    ByteString sig = ByteString.copyFrom(bytes);
+
+    transaction = transaction.toBuilder().addSignature(sig).build();
+
+    TransactionCapsule c2 = new TransactionCapsule(transaction);
+
+    c2.setReference(manager.getDynamicPropertiesStore().getLatestBlockHeaderNumber(),
+      manager.getDynamicPropertiesStore().getLatestBlockHeaderHash().getBytes());
+
+    return c2;
+  }
+
+
+}

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tron.common.es.ExecutorServiceManager;
+import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.config.args.Args;
 import org.tron.core.exception.P2pException;
 import org.tron.core.exception.P2pException.TypeEnum;
@@ -20,6 +21,7 @@ import org.tron.core.net.message.adv.TransactionsMessage;
 import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.adv.AdvService;
+import org.tron.program.Broadcast;
 import org.tron.protos.Protocol.Inventory.InventoryType;
 import org.tron.protos.Protocol.ReasonCode;
 import org.tron.protos.Protocol.Transaction;
@@ -70,6 +72,8 @@ public class TransactionsMsgHandler implements TronMsgHandler {
     int trxHandlePoolQueueSize = 0;
     int dropSmartContractCount = 0;
     for (Transaction trx : transactionsMessage.getTransactions().getTransactionsList()) {
+      logger.info("#### rcv tx {}", new TransactionCapsule(trx).getTransactionId());
+      Broadcast.rcvTx(new TransactionCapsule(trx));
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE
           || type == ContractType.CreateSmartContract_VALUE) {

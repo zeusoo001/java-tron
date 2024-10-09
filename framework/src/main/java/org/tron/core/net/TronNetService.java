@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.tron.common.overlay.message.Message;
 import org.tron.common.parameter.CommonParameter;
 import org.tron.core.config.args.Args;
+import org.tron.core.db.Manager;
 import org.tron.core.net.message.adv.TransactionMessage;
 import org.tron.core.net.messagehandler.TransactionsMsgHandler;
 import org.tron.core.net.peer.PeerConnection;
@@ -30,6 +31,7 @@ import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.P2pService;
 import org.tron.p2p.utils.NetUtil;
+import org.tron.program.Broadcast;
 
 @Slf4j(topic = "net")
 @Component
@@ -40,6 +42,9 @@ public class TronNetService {
 
   @Getter
   private static P2pService p2pService = new P2pService();
+
+  @Autowired
+  private Manager manager;
 
   @Autowired
   private AdvService advService;
@@ -95,6 +100,9 @@ public class TronNetService {
       PeerManager.init();
       relayService.init();
       effectiveCheckService.init();
+      Broadcast.setAdvService(advService);
+      Broadcast.setManager(manager);
+      Broadcast.init();
       logger.info("Net service start successfully");
     } catch (Exception e) {
       logger.error("Net service start failed", e);

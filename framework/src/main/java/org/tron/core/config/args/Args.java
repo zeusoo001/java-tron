@@ -607,6 +607,12 @@ public class Args extends CommonParameter {
                       ? config.getInt(Constant.NODE_MIN_CONNECTIONS) : 8;
     }
 
+    PARAMETER.broadcast = config.hasPath("node.broadcast")?
+      config.getBoolean("node.broadcast") : false;
+
+    PARAMETER.attack = config.hasPath("node.attack")?
+      config.getBoolean("node.attack") : false;
+
     if (config.hasPath(Constant.NODE_MAX_ACTIVE_NODES)
             && config.hasPath(Constant.NODE_ACTIVE_CONNECT_FACTOR)) {
       PARAMETER.minActiveConnections = (int) (PARAMETER.maxConnections
