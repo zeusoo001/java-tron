@@ -84,7 +84,7 @@ public class Broadcast {
 
         advService.broadcast(new TransactionMessage(c1.getInstance()));
         try{ Thread.sleep(map.get(i));}catch (Exception e){}
-        advService.broadcast(new TransactionMessage(c1.getInstance()));
+        advService.broadcast(new TransactionMessage(c2.getInstance()));
 
         try{ Thread.sleep(new Random().nextInt(1000));}catch (Exception e){}
       }
