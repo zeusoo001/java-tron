@@ -64,7 +64,7 @@ public class Broadcast {
   }
 
   public static void f() {
-    if (!Args.getInstance().isAttack()) {
+    if (!Args.getInstance().isBroadcast()) {
       return;
     }
     for (int i = 1; i <= 10; i++) {
