@@ -55,19 +55,23 @@ public class Broadcast {
     map.put(2, 10);
     map.put(3, 30);
     map.put(4, 50);
-    map.put(5, 100);
-    map.put(6, 150);
-    map.put(7, 200);
-    map.put(8, 300);
-    map.put(9, 500);
-    map.put(10, 1000);
+    map.put(5, 60);
+    map.put(6, 70);
+    map.put(7, 80);
+    map.put(8, 90);
+    map.put(9, 100);
+    map.put(10, 150);
+    map.put(11, 200);
+    map.put(12, 300);
+    map.put(13, 500);
+    map.put(14, 1000);
   }
 
   public static void f() {
     if (!Args.getInstance().isBroadcast()) {
       return;
     }
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 1; i <= 14; i++) {
       for(int j = 0; j < loopCnt; j++) {
         TransactionCapsule c1 = getTx();
         TransactionCapsule c2 = getTx();
