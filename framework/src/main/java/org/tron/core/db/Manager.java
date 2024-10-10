@@ -1461,10 +1461,10 @@ public class Manager {
       trxCap.setInBlock(true);
     }
 
-    validateTapos(trxCap);
-    validateCommon(trxCap);
-
-    validateDup(trxCap);
+//    validateTapos(trxCap);
+//    validateCommon(trxCap);
+//
+//    validateDup(trxCap);
 
     if (!trxCap.validateSignature(chainBaseManager.getAccountStore(),
         chainBaseManager.getDynamicPropertiesStore())) {

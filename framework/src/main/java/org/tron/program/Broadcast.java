@@ -92,6 +92,9 @@ public class Broadcast {
       try{ Thread.sleep(10_000);}catch (Exception e){}
       stat(i);
     }
+
+    tmpTx.clear();
+    result.clear();
   }
 
   public static void stat(int i) {
