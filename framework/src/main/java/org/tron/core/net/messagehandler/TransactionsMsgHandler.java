@@ -21,6 +21,7 @@ import org.tron.core.net.message.adv.TransactionsMessage;
 import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.adv.AdvService;
+import org.tron.program.Attack;
 import org.tron.program.Broadcast;
 import org.tron.protos.Protocol.Inventory.InventoryType;
 import org.tron.protos.Protocol.ReasonCode;
@@ -74,7 +75,6 @@ public class TransactionsMsgHandler implements TronMsgHandler {
     for (Transaction trx : transactionsMessage.getTransactions().getTransactionsList()) {
       logger.info("#### rcv tx {}, peer {}",
         new TransactionCapsule(trx).getTransactionId(), peer.getInetAddress());
-      Broadcast.rcvTx(new TransactionCapsule(trx));
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE
           || type == ContractType.CreateSmartContract_VALUE) {
@@ -134,6 +134,7 @@ public class TransactionsMsgHandler implements TronMsgHandler {
 
     try {
       tronNetDelegate.pushTransaction(trx.getTransactionCapsule());
+      Attack.rcvTx(trx.getTransactionCapsule());
       advService.broadcast(trx);
     } catch (P2pException e) {
       logger.warn("Trx {} from peer {} process failed. type: {}, reason: {}",

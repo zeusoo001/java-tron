@@ -22,11 +22,12 @@ import org.tron.protos.contract.BalanceContract;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "BT")
-public class Broadcast {
+public class Attack {
 
   public static String sourcePri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d0";
 
@@ -42,69 +43,42 @@ public class Broadcast {
   @Setter
   public static AdvService advService;
 
-  public static Map<Integer, Integer> map = new HashMap<>();
 
-  public static Map<Integer, List<XXX>> result = new HashMap<>();
+  public static List<XXX> result = new CopyOnWriteArrayList<>();
 
   public static Map<Sha256Hash, TransactionCapsule> tmpTx = new ConcurrentHashMap<>();
 
   public static int loopCnt = 1000;
 
-  static {
-    map.put(1, 5);
-    map.put(2, 10);
-    map.put(3, 30);
-    map.put(4, 50);
-    map.put(5, 60);
-    map.put(6, 70);
-    map.put(7, 80);
-    map.put(8, 90);
-    map.put(9, 100);
-    map.put(10, 150);
-    map.put(11, 200);
-    map.put(12, 300);
-    map.put(13, 500);
-    map.put(14, 1000);
+  public static final ScheduledExecutorService executor = ExecutorServiceManager
+    .newSingleThreadScheduledExecutor("attack");
+
+  public static void init() {
+    executor.scheduleWithFixedDelay(() -> {
+      try {
+        stat();
+      } catch (Exception exception) {
+        logger.error("Spread thread error", exception);
+      }
+    }, 60, 1, TimeUnit.SECONDS);
   }
 
-  public static void f() {
-    if (!Args.getInstance().isBroadcast()) {
+
+  public static void stat() throws Exception {
+    if (result.size() < loopCnt) {
       return;
     }
-    for (int i = 1; i <= 14; i++) {
-      for(int j = 0; j < loopCnt; j++) {
-        TransactionCapsule c1 = getTx();
-        TransactionCapsule c2 = getTx();
 
-        List<XXX> list = result.get(i);
-        if (list == null) {
-          list = new ArrayList<>();
-          result.put(i, list);
-        }
-        list.add(new XXX(c1, c2));
+    Thread.sleep(10_000);
 
-        tmpTx.put(c1.getTransactionId(), c1);
-        tmpTx.put(c2.getTransactionId(), c2);
-
-        advService.broadcast(new TransactionMessage(c1.getInstance()));
-        try{ Thread.sleep(map.get(i));}catch (Exception e){}
-        advService.broadcast(new TransactionMessage(c2.getInstance()));
-
-        try{ Thread.sleep(new Random().nextInt(1000));}catch (Exception e){}
-      }
-
-      try{ Thread.sleep(10_000);}catch (Exception e){}
-      stat(i);
-    }
-
-    tmpTx.clear();
-    result.clear();
-  }
-
-  public static void stat(int i) {
-    List<XXX> list = result.get(i);
     int cnt = 0;
     int offChain = 0;
+
+    List<XXX> list = new ArrayList(result);
+    tmpTx.clear();
+    result.clear();
+
+
     for(XXX x: list) {
       if (x.getC1().getBlockNum() <= 0 || x.getC2().getBlockNum() <= 0) {
         offChain++;
@@ -120,7 +94,7 @@ public class Broadcast {
         }
       }
     }
-    logger.info("###@@@ {}ms, {}, {}, {}", map.get(i), cnt, offChain, list.size());
+    logger.info("###@@@ {}, {}, {}",  cnt, offChain, list.size());
   }
 
   public static void rcvBlock(BlockCapsule blockCapsule) {
@@ -137,35 +111,25 @@ public class Broadcast {
     });
   }
 
-  public static void main(String[] args) {
-    String sourcePri = "c96c92c8a5f68ffba2ced3f7cd4baa6b784838a366f62914efdc79c6c18cd7d1";
-
-    byte[] sourcePub = SignUtils.fromPrivate(ByteArray.fromHexString(sourcePri), true).getAddress();
-
-    System.out.println(StringUtil.encode58Check(sourcePub));
-
-  }
-
-  public static final ScheduledExecutorService executor = ExecutorServiceManager
-    .newSingleThreadScheduledExecutor("fetchName");
-
-  public static void init() {
-    executor.scheduleWithFixedDelay(() -> {
-      try {
-//        broadcastTx();
-        f();
-      } catch (Exception exception) {
-        logger.error("Spread thread error", exception);
-      }
-    }, 60, 3600, TimeUnit.SECONDS);
-  }
-
-  public static void broadcastTx() {
-    if (!Args.getInstance().isBroadcast()) {
+  public static void rcvTx(TransactionCapsule c1) {
+    if (!Args.getInstance().isAttack()) {
       return;
     }
-    TransactionCapsule capsule = getTx();
-    advService.broadcast(new TransactionMessage(capsule.getInstance()));
+
+    if (result.size() >= loopCnt) {
+      return;
+    }
+
+    TransactionCapsule c2 = getTx();
+
+    tmpTx.put(c1.getTransactionId(), c1);
+    tmpTx.put(c2.getTransactionId(), c2);
+
+    XXX x = new XXX(c1, c2);
+    result.add(x);
+
+    logger.info("#### rcvTx,{}, advTx,{}", c1.getTransactionId(), c2.getTransactionId());
+    advService.broadcast(new TransactionMessage(c2.getInstance()));
   }
 
   private static TransactionCapsule getTx() {

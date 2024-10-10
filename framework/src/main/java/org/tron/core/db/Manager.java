@@ -157,6 +157,7 @@ import org.tron.core.store.VotesStore;
 import org.tron.core.store.WitnessScheduleStore;
 import org.tron.core.store.WitnessStore;
 import org.tron.core.utils.TransactionRegister;
+import org.tron.program.Attack;
 import org.tron.program.Broadcast;
 import org.tron.protos.Protocol.AccountType;
 import org.tron.protos.Protocol.Permission;
@@ -1334,6 +1335,7 @@ public class Manager {
                 logger.info("#### txId {}, blockNum {}, index {}", capsule.getTransactionId(), block.getNum(), i++);
               }
               Broadcast.rcvBlock(block);
+              Attack.rcvBlock(block);
             } catch (Throwable throwable) {
               logger.error(throwable.getMessage(), throwable);
               khaosDb.removeBlk(block.getBlockId());

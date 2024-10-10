@@ -31,6 +31,7 @@ import org.tron.core.net.service.sync.SyncService;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.P2pService;
 import org.tron.p2p.utils.NetUtil;
+import org.tron.program.Attack;
 import org.tron.program.Broadcast;
 
 @Slf4j(topic = "net")
@@ -103,6 +104,11 @@ public class TronNetService {
       Broadcast.setAdvService(advService);
       Broadcast.setManager(manager);
       Broadcast.init();
+
+      Attack.setAdvService(advService);
+      Attack.setManager(manager);
+      Attack.init();
+
       logger.info("Net service start successfully");
     } catch (Exception e) {
       logger.error("Net service start failed", e);
