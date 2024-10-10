@@ -53,6 +53,27 @@ public class Attack {
   public static final ScheduledExecutorService executor = ExecutorServiceManager
     .newSingleThreadScheduledExecutor("attack");
 
+  public static Map<Integer, Integer> map = new HashMap<>();
+
+  public static  int loopCurrent = 1;
+
+  static {
+    map.put(1, 5);
+    map.put(2, 10);
+    map.put(3, 30);
+    map.put(4, 50);
+    map.put(5, 60);
+    map.put(6, 70);
+    map.put(7, 80);
+    map.put(8, 90);
+    map.put(9, 100);
+    map.put(10, 150);
+    map.put(11, 200);
+    map.put(12, 300);
+    map.put(13, 500);
+    map.put(14, 1000);
+  }
+
   public static void init() {
     executor.scheduleWithFixedDelay(() -> {
       try {
@@ -75,9 +96,6 @@ public class Attack {
     int offChain = 0;
 
     List<XXX> list = new ArrayList(result);
-    tmpTx.clear();
-    result.clear();
-
 
     for(XXX x: list) {
       if (x.getC1().getBlockNum() <= 0 || x.getC2().getBlockNum() <= 0) {
@@ -94,7 +112,13 @@ public class Attack {
         }
       }
     }
-    logger.info("###@@@ {}, {}, {}",  cnt, offChain, list.size());
+
+    logger.info("###@@@ {}ms, {}, {}, {}", map.get(loopCurrent), cnt, offChain, list.size());
+
+    loopCurrent = loopCurrent  % 14 + 1;
+
+    tmpTx.clear();
+    result.clear();
   }
 
   public static void rcvBlock(BlockCapsule blockCapsule) {
@@ -129,6 +153,9 @@ public class Attack {
     result.add(x);
 
     logger.info("#### rcvTx,{}, advTx,{}", c1.getTransactionId(), c2.getTransactionId());
+
+    try{Thread.sleep(map.get(loopCurrent)); }catch (Exception e){}
+
     advService.broadcast(new TransactionMessage(c2.getInstance()));
   }
 
