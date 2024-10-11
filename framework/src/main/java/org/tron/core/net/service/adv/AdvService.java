@@ -130,7 +130,9 @@ public class AdvService {
         return false;
       }
       invToFetchCache.put(item, System.currentTimeMillis());
-      invToFetch.put(item, System.currentTimeMillis());
+      if (InventoryType.BLOCK.equals(item.getType())) {
+        invToFetch.put(item, System.currentTimeMillis());
+      }
     }
 
     if (InventoryType.BLOCK.equals(item.getType())) {

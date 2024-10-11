@@ -7,11 +7,15 @@ import org.tron.common.utils.Sha256Hash;
 import org.tron.core.config.args.Args;
 import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.message.TronMessage;
+import org.tron.core.net.message.adv.FetchInvDataMessage;
 import org.tron.core.net.message.adv.InventoryMessage;
 import org.tron.core.net.peer.Item;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.service.adv.AdvService;
 import org.tron.protos.Protocol.Inventory.InventoryType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j(topic = "net")
 @Component
@@ -35,13 +39,17 @@ public class InventoryMsgHandler implements TronMsgHandler {
       return;
     }
 
+    List<Sha256Hash> list = new ArrayList<>();
     for (Sha256Hash id : inventoryMessage.getHashList()) {
       Item item = new Item(id, type);
       peer.getAdvInvReceive().put(item, System.currentTimeMillis());
-      advService.addInv(item);
-      if (type.equals(InventoryType.BLOCK) && peer.getAdvInvSpread().getIfPresent(item) == null) {
-        peer.setLastInteractiveTime(System.currentTimeMillis());
+      if(advService.addInv(item)) {
+        list.add(id);
+        peer.getAdvInvRequest().put(new Item(id, InventoryType.TRX), System.currentTimeMillis());
       }
+    }
+    if(list.size() > 0) {
+      peer.sendMessage(new FetchInvDataMessage(list, InventoryType.TRX));
     }
   }
 
@@ -52,19 +60,19 @@ public class InventoryMsgHandler implements TronMsgHandler {
 
     if (peer.isNeedSyncFromPeer() || peer.isNeedSyncFromUs()) {
       logger.warn("Drop inv: {} size: {} from Peer {}, syncFromUs: {}, syncFromPeer: {}",
-          type, size, peer.getInetAddress(), peer.isNeedSyncFromUs(), peer.isNeedSyncFromPeer());
+        type, size, peer.getInetAddress(), peer.isNeedSyncFromUs(), peer.isNeedSyncFromPeer());
       return false;
     }
 
     if (type.equals(InventoryType.TRX) && tronNetDelegate.isBlockUnsolidified()) {
       logger.warn("Drop inv: {} size: {} from Peer {}, block unsolidified",
-          type, size, peer.getInetAddress());
+        type, size, peer.getInetAddress());
       return false;
     }
 
     if (type.equals(InventoryType.TRX) && transactionsMsgHandler.isBusy()) {
       logger.warn("Drop inv: {} size: {} from Peer {}, transactionsMsgHandler is busy",
-              type, size, peer.getInetAddress());
+        type, size, peer.getInetAddress());
       if (Args.getInstance().isOpenPrintLog()) {
         logger.warn("[isBusy]Drop tx list is: {}", inventoryMessage.getHashList());
       }
