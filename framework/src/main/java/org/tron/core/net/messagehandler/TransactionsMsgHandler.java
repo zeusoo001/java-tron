@@ -104,6 +104,9 @@ public class TransactionsMsgHandler implements TronMsgHandler {
           "trx: " + msg.getMessageId() + " without request.");
       }
       Long time = peer.getAdvInvRequest().remove(item);
+      logger.info("#### Rcv tx {}, ip: {}, delay {}",
+        new TransactionCapsule(trx).getTransactionId(), peer.getInetAddress(), System.currentTimeMillis() - time);
+
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE) {
         final String OWNER_ADDRESS = "TPsUGKAoXDSFz332ZYtTGdDHWzftLYWFj7";
