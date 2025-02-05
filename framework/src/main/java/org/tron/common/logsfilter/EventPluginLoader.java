@@ -24,6 +24,7 @@ import org.tron.common.logsfilter.trigger.ContractTrigger;
 import org.tron.common.logsfilter.trigger.SolidityTrigger;
 import org.tron.common.logsfilter.trigger.TransactionLogTrigger;
 import org.tron.common.logsfilter.trigger.Trigger;
+import org.tron.common.utils.JsonUtil;
 
 @Slf4j
 public class EventPluginLoader {
@@ -41,6 +42,10 @@ public class EventPluginLoader {
   private String dbConfig;
 
   private List<TriggerConfig> triggerConfigList;
+
+  private int version = 0;
+
+  private long startSyncBlockNum = 0;
 
   private boolean blockLogTriggerEnable = false;
 
@@ -219,6 +224,10 @@ public class EventPluginLoader {
       return false;
     }
 
+    this.version = config.getVersion();
+
+    this.startSyncBlockNum = config.getStartSyncBlockNum();
+
     this.triggerConfigList = config.getTriggerConfigList();
 
     useNativeQueue = config.isUseNativeQueue();
@@ -349,6 +358,7 @@ public class EventPluginLoader {
   }
 
   public void postSolidityTrigger(SolidityTrigger trigger) {
+    logger.info("SolidityTrigger ### {}", trigger);
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -356,6 +366,14 @@ public class EventPluginLoader {
       eventListeners.forEach(listener ->
           listener.handleSolidityTrigger(toJsonString(trigger)));
     }
+  }
+
+  public synchronized int getVersion() {
+    return version;
+  }
+
+  public synchronized long getStartSyncBlockNum() {
+    return startSyncBlockNum;
   }
 
   public synchronized boolean isBlockLogTriggerEnable() {
@@ -462,6 +480,7 @@ public class EventPluginLoader {
   }
 
   public void postBlockTrigger(BlockLogTrigger trigger) {
+    logger.info("BlockLogTrigger ### {}", trigger);
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -472,6 +491,7 @@ public class EventPluginLoader {
   }
 
   public void postSolidityLogTrigger(ContractLogTrigger trigger) {
+    logger.info("SolidityLogTrigger ### {}", JsonUtil.obj2Json(trigger));
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -482,6 +502,7 @@ public class EventPluginLoader {
   }
 
   public void postSolidityEventTrigger(ContractEventTrigger trigger) {
+    logger.info("SolidityEventTrigger ### {}", JsonUtil.obj2Json(trigger));
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -492,6 +513,7 @@ public class EventPluginLoader {
   }
 
   public void postTransactionTrigger(TransactionLogTrigger trigger) {
+    logger.info("TransactionTrigger ### {}", JsonUtil.obj2Json(trigger));
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -501,6 +523,7 @@ public class EventPluginLoader {
   }
 
   public void postContractLogTrigger(ContractLogTrigger trigger) {
+    logger.info("ContractLogTrigger ### {}", JsonUtil.obj2Json(trigger));
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());
@@ -511,6 +534,7 @@ public class EventPluginLoader {
   }
 
   public void postContractEventTrigger(ContractEventTrigger trigger) {
+    logger.info("ContractEventTrigger ### {}", JsonUtil.obj2Json(trigger));
     if (useNativeQueue) {
       NativeMessageQueue.getInstance()
           .publishTrigger(toJsonString(trigger), trigger.getTriggerName());

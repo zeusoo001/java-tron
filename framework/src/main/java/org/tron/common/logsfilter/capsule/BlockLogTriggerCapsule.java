@@ -2,6 +2,7 @@ package org.tron.common.logsfilter.capsule;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.tron.common.logsfilter.EventPluginLoader;
 import org.tron.common.logsfilter.trigger.BlockLogTrigger;
 import org.tron.core.capsule.BlockCapsule;
