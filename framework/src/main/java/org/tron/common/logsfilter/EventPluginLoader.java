@@ -42,6 +42,10 @@ public class EventPluginLoader {
 
   private List<TriggerConfig> triggerConfigList;
 
+  private int version = 0;
+
+  private long startSyncBlockNum = 0;
+
   private boolean blockLogTriggerEnable = false;
 
   private boolean blockLogTriggerSolidified = false;
@@ -219,6 +223,10 @@ public class EventPluginLoader {
       return false;
     }
 
+    this.version = config.getVersion();
+
+    this.startSyncBlockNum = config.getStartSyncBlockNum();
+
     this.triggerConfigList = config.getTriggerConfigList();
 
     useNativeQueue = config.isUseNativeQueue();
@@ -356,6 +364,14 @@ public class EventPluginLoader {
       eventListeners.forEach(listener ->
           listener.handleSolidityTrigger(toJsonString(trigger)));
     }
+  }
+
+  public synchronized int getVersion() {
+    return version;
+  }
+
+  public synchronized long getStartSyncBlockNum() {
+    return startSyncBlockNum;
   }
 
   public synchronized boolean isBlockLogTriggerEnable() {

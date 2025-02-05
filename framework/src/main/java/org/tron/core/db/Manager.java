@@ -132,6 +132,7 @@ import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.service.MortgageService;
 import org.tron.core.service.RewardViCalService;
+import org.tron.core.services.event.EventService;
 import org.tron.core.store.AccountAssetStore;
 import org.tron.core.store.AccountIdIndexStore;
 import org.tron.core.store.AccountIndexStore;
@@ -189,6 +190,8 @@ public class Manager {
   @Getter
   @Autowired
   private RevokingDatabase revokingStore;
+  @Autowired
+  private EventService eventService;
   @Getter
   private SessionOptional session = SessionOptional.instance();
   @Getter
@@ -237,6 +240,7 @@ public class Manager {
       Collections.synchronizedList(Lists.newArrayList());
   // the capacity is equal to Integer.MAX_VALUE default
   private BlockingQueue<TransactionCapsule> rePushTransactions;
+  @Getter
   private BlockingQueue<TriggerCapsule> triggerCapsuleQueue;
   // log filter
   private boolean isRunFilterProcessThread = true;
@@ -1100,7 +1104,9 @@ public class Manager {
       while (!getDynamicPropertiesStore()
           .getLatestBlockHeaderHash()
           .equals(binaryTree.getValue().peekLast().getParentHash())) {
-        reOrgContractTrigger();
+        if (EventPluginLoader.getInstance().getVersion() == 0) {
+          reOrgContractTrigger();;
+        }
         reOrgLogsFilter();
         eraseBlock();
       }
@@ -1362,11 +1368,26 @@ public class Manager {
   }
 
   void blockTrigger(final BlockCapsule block, long oldSolid, long newSolid) {
+    // post block and logs for jsonrpc
     try {
+      if (CommonParameter.getInstance().isJsonRpcHttpFullNodeEnable()) {
+        postBlockFilter(block, false);
+        postLogsFilter(block, false, false);
+      }
+
+      if (CommonParameter.getInstance().isJsonRpcHttpSolidityNodeEnable()) {
+        postSolidityFilter(oldSolid, newSolid);
+      }
+
+      if (EventPluginLoader.getInstance().getVersion() != 0) {
+        lastUsedSolidityNum = newSolid;
+        return;
+      }
+
       // if event subscribe is enabled, post block trigger to queue
       postBlockTrigger(block);
       // if event subscribe is enabled, post solidity trigger to queue
-      postSolidityTrigger(oldSolid, newSolid);
+      postSolidityTrigger(newSolid);
     } catch (Exception e) {
       logger.error("Block trigger failed. head: {}, oldSolid: {}, newSolid: {}",
           block.getNum(), oldSolid, newSolid, e);
@@ -1506,7 +1527,8 @@ public class Manager {
 
     // if event subscribe is enabled, post contract triggers to queue
     // only trigger when process block
-    if (Objects.nonNull(blockCap) && !blockCap.isMerkleRootEmpty()) {
+    if (Objects.nonNull(blockCap) && !blockCap.isMerkleRootEmpty() &&
+      EventPluginLoader.getInstance().getVersion() == 0) {
       String blockHash = blockCap.getBlockId().toString();
       postContractTrigger(trace, false, blockHash);
     }
@@ -2059,6 +2081,10 @@ public class Manager {
         logger.error("Failed to load eventPlugin.");
       }
 
+      if (eventPluginLoaded && EventPluginLoader.getInstance().getVersion() == 1) {
+        eventService.init(this);
+      }
+
       FilterQuery eventFilter = Args.getInstance().getEventFilter();
       if (!Objects.isNull(eventFilter)) {
         EventPluginLoader.getInstance().setFilterQuery(eventFilter);
@@ -2083,7 +2109,7 @@ public class Manager {
     }
   }
 
-  private void postSolidityTrigger(final long oldSolidNum, final long latestSolidifiedBlockNumber) {
+  private void postSolidityTrigger(final long latestSolidifiedBlockNumber) {
     if (eventPluginLoaded && EventPluginLoader.getInstance().isSolidityLogTriggerEnable()) {
       for (Long i : Args.getSolidityContractLogTriggerMap().keySet()) {
         postSolidityLogContractTrigger(i, latestSolidifiedBlockNumber);
@@ -2108,10 +2134,6 @@ public class Manager {
               blockCapsule.getNum());
         }
       }
-    }
-
-    if (CommonParameter.getInstance().isJsonRpcHttpSolidityNodeEnable()) {
-      postSolidityFilter(oldSolidNum, latestSolidifiedBlockNumber);
     }
     lastUsedSolidityNum = latestSolidifiedBlockNumber;
   }
@@ -2224,12 +2246,6 @@ public class Manager {
   }
 
   void postBlockTrigger(final BlockCapsule blockCapsule) {
-    // post block and logs for jsonrpc
-    if (CommonParameter.getInstance().isJsonRpcHttpFullNodeEnable()) {
-      postBlockFilter(blockCapsule, false);
-      postLogsFilter(blockCapsule, false, false);
-    }
-
     // process block trigger
     long solidityBlkNum = getDynamicPropertiesStore().getLatestSolidifiedBlockNum();
     if (eventPluginLoaded && EventPluginLoader.getInstance().isBlockLogTriggerEnable()) {
@@ -2463,6 +2479,7 @@ public class Manager {
     EventPluginLoader.getInstance().stopPlugin();
     stopFilterProcessThread();
     stopValidateSignThread();
+    eventService.close();
     chainBaseManager.shutdown();
     revokingStore.shutdown();
     session.reset();
