@@ -70,12 +70,16 @@ public class BlockEventGet {
     if(instance.isTransactionLogTriggerEnable()) {
       String energyPriceHistory = manager.getDynamicPropertiesStore().getEnergyPriceHistory();
       String[] energyPrices = energyPriceHistory.split(",");
-//      for (int i = 0; i < energyPrices.length; i++) {
-//        if (block.getTimeStamp() < Long.parseLong(energyPrices[i])) {
-//          blockEvent.setEnergyFee(Long.parseLong(energyPrices[i - 1]));
-//          break;
-//        }
-//      }
+      String[] defaultEnergyPrice = energyPrices[0].split(":");
+      long energyPrice = Long.parseLong(defaultEnergyPrice[1]);
+      for (int i = 1; i < energyPrices.length; i++) {
+        long effectiveTime = Long.parseLong(energyPrices[i].split(":")[0]);
+        if (block.getTimeStamp() < effectiveTime) {
+          energyPrice = Long.parseLong(energyPrices[i].split(":")[1]);
+          break;
+        }
+      }
+      blockEvent.setEnergyFee(energyPrice);
       blockEvent.setTransactionLogTriggerCapsules(getTransactionLogTrigger(block, solidNum));
     }
 
@@ -83,7 +87,7 @@ public class BlockEventGet {
       instance.isContractEventTriggerEnable() ||
       instance.isSolidityLogTriggerEnable() ||
       instance.isSolidityEventTriggerEnable()) {
-      blockEvent.setSmartContractTrigger(getContractTrigger(block, solidNum));
+      blockEvent.setSmartContractTrigger(getSmartContractTrigger(block, solidNum));
     }
 
     if (instance.isSolidityTriggerEnable()) {
@@ -95,7 +99,7 @@ public class BlockEventGet {
     return blockEvent;
   }
 
-  public SmartContractTrigger getContractTrigger(BlockCapsule block, long solidNum) {
+  public SmartContractTrigger getSmartContractTrigger(BlockCapsule block, long solidNum) {
     TransactionRetCapsule result;
     try {
       result = manager.getChainBaseManager().getTransactionRetStore()
@@ -112,7 +116,11 @@ public class BlockEventGet {
       List<ContractTrigger> triggers = parseLogs(tx, txInfo);
       for (ContractTrigger trigger : triggers) {
         ContractTrigger eventOrLog = processTrigger(trigger);
+
         if (eventOrLog != null) {
+          eventOrLog.setBlockHash(Hex.toHexString(block.getBlockId().getBytes()));
+          eventOrLog.setLatestSolidifiedBlockNumber(solidNum);
+
           if (eventOrLog instanceof ContractEventTrigger) {
             ContractEventTrigger event = (ContractEventTrigger) eventOrLog;
             if (instance.isContractEventTriggerEnable()) {
@@ -218,7 +226,7 @@ public class BlockEventGet {
     return new LogInfo(address, topics, data);
   }
 
-  private ContractTrigger processTrigger(org.tron.common.logsfilter.trigger.ContractTrigger contractTrigger) {
+  private ContractTrigger processTrigger(ContractTrigger contractTrigger) {
     ContractTrigger event;
     boolean isEvent = false;
     LogInfo logInfo = contractTrigger.getLogInfo();
