@@ -161,7 +161,6 @@ public class TronNetService {
 
   private P2pConfig updateConfig(P2pConfig config) {
     List<InetSocketAddress> seeds = parameter.getSeedNode().getAddressList();
-    seeds.addAll(nodePersistService.dbRead());
     logger.debug("Seed InetSocketAddress: {}", seeds);
     config.getSeedNodes().addAll(seeds);
     config.getActiveNodes().addAll(parameter.getActiveNodes());
