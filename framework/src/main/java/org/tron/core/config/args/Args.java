@@ -710,7 +710,7 @@ public class Args extends CommonParameter {
     PARAMETER.dnsPublishConfig = loadDnsPublishConfig(config);
 
     PARAMETER.syncFetchBatchNum = config.hasPath(Constant.NODE_SYNC_FETCH_BATCH_NUM) ? config
-        .getInt(Constant.NODE_SYNC_FETCH_BATCH_NUM) : 2000;
+        .getInt(Constant.NODE_SYNC_FETCH_BATCH_NUM) : 500;
     if (PARAMETER.syncFetchBatchNum > 2000) {
       PARAMETER.syncFetchBatchNum = 2000;
     }
