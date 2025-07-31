@@ -38,6 +38,10 @@ import org.tron.protos.Protocol.ReasonCode;
 @Component
 public class SyncService {
 
+  public static volatile long time = System.currentTimeMillis();
+  public static volatile long cost = 0;
+  public static volatile long cnt = 0;
+
   @Autowired
   private TronNetDelegate tronNetDelegate;
 
@@ -300,8 +304,13 @@ public class SyncService {
     boolean attackFlag = false;
     BlockId blockId = block.getBlockId();
     try {
+      long t = System.currentTimeMillis();
       tronNetDelegate.validSignature(block);
       tronNetDelegate.processBlock(block, true);
+      cnt++;
+      cost += System.currentTimeMillis() - t;
+      logger.info("#### cnt {}, cost {}, time {}, blockNum {}",
+              cnt, cost, System.currentTimeMillis() - time, block.getNum());
       pbftDataSyncHandler.processPBFTCommitData(block);
     } catch (P2pException p2pException) {
       logger.error("Process sync block {} failed, type: {}",
