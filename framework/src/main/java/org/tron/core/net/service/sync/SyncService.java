@@ -48,9 +48,9 @@ public class SyncService {
   @Autowired
   private PbftDataSyncHandler pbftDataSyncHandler;
 
-  private Map<BlockMessage, PeerConnection> blockWaitToProcess = new ConcurrentHashMap<>();
+  private Map<BlockTmp, PeerConnection> blockWaitToProcess = new ConcurrentHashMap<>();
 
-  private Map<BlockMessage, PeerConnection> blockJustReceived = new ConcurrentHashMap<>();
+  private Map<BlockTmp, PeerConnection> blockJustReceived = new ConcurrentHashMap<>();
 
   private long blockCacheTimeout = Args.getInstance().getBlockCacheTimeout();
   private Cache<BlockId, PeerConnection> requestBlockIds = CacheBuilder.newBuilder()
@@ -135,7 +135,10 @@ public class SyncService {
 
   public void processBlock(PeerConnection peer, BlockMessage blockMessage) {
     synchronized (blockJustReceived) {
-      blockJustReceived.put(blockMessage, peer);
+      BlockTmp blockTmp = new BlockTmp();
+      blockTmp.setBlockId(blockMessage.getBlockId());
+      blockTmp.setData(blockMessage.getData());
+      blockJustReceived.put(blockTmp, peer);
     }
     handleFlag = true;
     if (peer.isSyncIdle()) {
@@ -291,7 +294,13 @@ public class SyncService {
           if (isFound[0]) {
             blockWaitToProcess.remove(msg);
             isProcessed[0] = true;
-            processSyncBlock(msg.getBlockCapsule(), peerConnection);
+            BlockCapsule blockCapsule = null;
+            try {
+              blockCapsule = new BlockCapsule(msg.getData());
+            }catch (Exception e) {
+              logger.warn("", e);
+            }
+            processSyncBlock(blockCapsule, peerConnection);
             peerConnection.getSyncBlockInProcess().remove(msg.getBlockId());
           }
         }
