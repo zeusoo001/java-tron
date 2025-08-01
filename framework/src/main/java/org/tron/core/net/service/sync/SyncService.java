@@ -294,13 +294,7 @@ public class SyncService {
           if (isFound[0]) {
             blockWaitToProcess.remove(msg);
             isProcessed[0] = true;
-            BlockCapsule blockCapsule = null;
-            try {
-              blockCapsule = new BlockCapsule(msg.getData());
-            }catch (Exception e) {
-              logger.warn("", e);
-            }
-            processSyncBlock(blockCapsule, peerConnection);
+            processSyncBlock(msg, peerConnection);
             peerConnection.getSyncBlockInProcess().remove(msg.getBlockId());
           }
         }
@@ -308,12 +302,19 @@ public class SyncService {
     }
   }
 
-  private void processSyncBlock(BlockCapsule block, PeerConnection peerConnection) {
+  private void processSyncBlock(BlockTmp blockTmp, PeerConnection peerConnection) {
+
     boolean flag = true;
     boolean attackFlag = false;
-    BlockId blockId = block.getBlockId();
+    BlockId blockId = blockTmp.getBlockId();
     try {
       long t = System.currentTimeMillis();
+      BlockCapsule block = null;
+      try {
+        block = new BlockCapsule(blockTmp.getData());
+      }catch (Exception e) {
+        logger.warn("", e);
+      }
       tronNetDelegate.validSignature(block);
       tronNetDelegate.processBlock(block, true);
       cnt++;
