@@ -5,6 +5,7 @@ import static org.tron.core.config.Parameter.NetConstants.MAX_BLOCK_FETCH_PER_PE
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -41,6 +42,8 @@ public class SyncService {
   public static volatile long time = System.currentTimeMillis();
   public static volatile long cost = 0;
   public static volatile long cnt = 0;
+
+  private static volatile long maxSyncBlockNum = 0;
 
   @Autowired
   private TronNetDelegate tronNetDelegate;
@@ -232,16 +235,29 @@ public class SyncService {
 
   private void startFetchSyncBlock() {
     HashMap<PeerConnection, List<BlockId>> send = new HashMap<>();
-    tronNetDelegate.getActivePeer().stream()
+    Collection<PeerConnection> peers = tronNetDelegate.getActivePeer();
+    int reqNum = peers.stream().mapToInt(p->p.getSyncBlockRequested().size()).sum();
+    int remainNum = (int)syncFetchBatchNum - reqNum - blockJustReceived.size() - blockWaitToProcess.size();
+    int[] cnt = {0};
+    logger.info("#### syncFetchBatchNum:{},  reqNum: {}, remainNum: {}, maxSyncBlockNum: {}",
+            syncFetchBatchNum, reqNum, remainNum, maxSyncBlockNum);
+    peers.stream()
         .filter(peer -> peer.isNeedSyncFromPeer() && peer.isSyncIdle())
-        .filter(peer -> peer.isFetchAble())
+        .filter(PeerConnection::isFetchAble)
         .forEach(peer -> {
           if (!send.containsKey(peer)) {
             send.put(peer, new LinkedList<>());
           }
           for (BlockId blockId : peer.getSyncBlockToFetch()) {
+            if (cnt[0] >= remainNum && blockId.getNum() > maxSyncBlockNum) {
+              break;
+            }
             if (requestBlockIds.getIfPresent(blockId) == null
                 && !peer.getSyncBlockInProcess().contains(blockId)) {
+              cnt[0]++;
+              if (blockId.getNum() > maxSyncBlockNum) {
+                maxSyncBlockNum = blockId.getNum();
+              }
               requestBlockIds.put(blockId, peer);
               peer.getSyncBlockRequested().put(blockId, System.currentTimeMillis());
               send.get(peer).add(blockId);
