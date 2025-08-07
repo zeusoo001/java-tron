@@ -22,6 +22,7 @@ import org.tron.common.es.ExecutorServiceManager;
 import org.tron.common.utils.Pair;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.BlockCapsule.BlockId;
+import org.tron.core.config.Parameter;
 import org.tron.core.config.args.Args;
 import org.tron.core.exception.P2pException;
 import org.tron.core.exception.P2pException.TypeEnum;
@@ -146,7 +147,7 @@ public class SyncService {
     handleFlag = true;
     if (peer.isSyncIdle()) {
       if (peer.getRemainNum() > 0
-          && peer.getSyncBlockToFetch().size() <= syncFetchBatchNum) {
+          && peer.getSyncBlockToFetch().size() <= Parameter.NetConstants.SYNC_FETCH_BATCH_NUM) {
         syncNext(peer);
       } else {
         fetchFlag = true;
