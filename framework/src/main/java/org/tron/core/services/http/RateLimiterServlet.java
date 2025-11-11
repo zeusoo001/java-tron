@@ -88,17 +88,14 @@ public abstract class RateLimiterServlet extends HttpServlet {
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    
+
     RuntimeData runtimeData = new RuntimeData(req);
-    GlobalRateLimiter.acquire(runtimeData);
-
     IRateLimiter rateLimiter = container.get(KEY_PREFIX_HTTP, getClass().getSimpleName());
-
-    boolean acquireResource = true;
-
-    if (rateLimiter != null) {
-      acquireResource = rateLimiter.acquire(runtimeData);
+    boolean acquireResource = GlobalRateLimiter.tryAcquire(runtimeData);
+    if (acquireResource && rateLimiter != null) {
+      acquireResource = rateLimiter.tryAcquire(runtimeData);
     }
+
     String url = Strings.isNullOrEmpty(req.getRequestURI())
         ? MetricLabels.UNDEFINED : req.getRequestURI();
     try {

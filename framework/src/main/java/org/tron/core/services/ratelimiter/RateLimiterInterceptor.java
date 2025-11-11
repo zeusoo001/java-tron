@@ -20,6 +20,7 @@ import org.tron.common.parameter.RateLimiterInitialization.RpcRateLimiterItem;
 import org.tron.core.config.args.Args;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
+import org.tron.core.services.http.Util;
 import org.tron.core.services.ratelimiter.adapter.DefaultBaseQqsAdapter;
 import org.tron.core.services.ratelimiter.adapter.IPreemptibleRateLimiter;
 import org.tron.core.services.ratelimiter.adapter.IRateLimiter;
@@ -104,17 +105,13 @@ public class RateLimiterInterceptor implements ServerInterceptor {
     IRateLimiter rateLimiter = container
         .get(KEY_PREFIX_RPC, call.getMethodDescriptor().getFullMethodName());
 
+    Listener<ReqT> listener = new ServerCall.Listener<ReqT>() {};
+
     RuntimeData runtimeData = new RuntimeData(call);
-    GlobalRateLimiter.acquire(runtimeData);
-
-    boolean acquireResource = true;
-
-    if (rateLimiter != null) {
-      acquireResource = rateLimiter.acquire(runtimeData);
+    boolean acquireResource = GlobalRateLimiter.tryAcquire(runtimeData);
+    if (acquireResource && rateLimiter != null) {
+      acquireResource = rateLimiter.tryAcquire(runtimeData);
     }
-
-    Listener<ReqT> listener = new ServerCall.Listener<ReqT>() {
-    };
 
     try {
       if (acquireResource) {

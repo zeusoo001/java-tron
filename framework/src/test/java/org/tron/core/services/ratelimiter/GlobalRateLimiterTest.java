@@ -13,12 +13,27 @@ public class GlobalRateLimiterTest {
   public void testAcquire() throws Exception {
     String[] a = new String[0];
     Args.setParam(a, Constant.TESTNET_CONF);
+
+    Args.getInstance().setRateLimiterGlobalQps(2);
+    Args.getInstance().setRateLimiterGlobalIpQps(1);
+
     RuntimeData runtimeData = new RuntimeData(null);
     Field field =  runtimeData.getClass().getDeclaredField("address");
     field.setAccessible(true);
     field.set(runtimeData, "127.0.0.1");
-    Assert.assertEquals(runtimeData.getRemoteAddr(), "127.0.0.1");
-    GlobalRateLimiter.acquire(runtimeData);
+    Assert.assertEquals("127.0.0.1", runtimeData.getRemoteAddr());
+
+    boolean flag = GlobalRateLimiter.tryAcquire(runtimeData);
+    Assert.assertTrue(flag);
+
+    flag = GlobalRateLimiter.tryAcquire(runtimeData);
+    Assert.assertFalse(flag);
+
+    field.set(runtimeData, "127.0.0.2");
+    Assert.assertEquals("127.0.0.2", runtimeData.getRemoteAddr());
+
+    flag = GlobalRateLimiter.tryAcquire(runtimeData);
+    Assert.assertFalse(flag);
   }
 
   @AfterClass

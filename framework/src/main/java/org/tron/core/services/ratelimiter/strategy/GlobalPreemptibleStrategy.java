@@ -29,20 +29,8 @@ public class GlobalPreemptibleStrategy extends Strategy {
     return map;
   }
 
-  public boolean acquire() {
-
-    try {
-      if (!sp.tryAcquire(DEFAULT_ACQUIRE_TIMEOUT, TimeUnit.SECONDS)) {
-        throw new RuntimeException();
-      }
-
-    } catch (InterruptedException e) {
-      logger.error("acquire permit with error: {}", e.getMessage());
-      Thread.currentThread().interrupt();
-    } catch (RuntimeException e1) {
-      return false;
-    }
-    return true;
+  public boolean tryAcquire() {
+    return sp.tryAcquire();
   }
 
   public void release() {
