@@ -74,6 +74,7 @@ public class TransactionsMsgHandler implements TronMsgHandler {
     int trxHandlePoolQueueSize = 0;
     int dropSmartContractCount = 0;
     for (Transaction trx : transactionsMessage.getTransactions().getTransactionsList()) {
+      logger.info("### processTrx {} from {}", new TransactionMessage(trx).getMessageId(), peer.getInetAddress());
       int type = trx.getRawData().getContract(0).getType().getNumber();
       if (type == ContractType.TriggerSmartContract_VALUE
           || type == ContractType.CreateSmartContract_VALUE) {
@@ -96,6 +97,7 @@ public class TransactionsMsgHandler implements TronMsgHandler {
 
   private void check(PeerConnection peer, TransactionsMessage msg) throws P2pException {
     for (Transaction trx : msg.getTransactions().getTransactionsList()) {
+      logger.info("### checkTrx {} from {}", new TransactionMessage(trx).getMessageId(), peer.getInetAddress());
       Item item = new Item(new TransactionMessage(trx).getMessageId(), InventoryType.TRX);
       if (!peer.getAdvInvRequest().containsKey(item)) {
         throw new P2pException(TypeEnum.BAD_MESSAGE,

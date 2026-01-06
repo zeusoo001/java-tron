@@ -15,6 +15,7 @@ import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.BlockCapsule.BlockId;
 import org.tron.core.capsule.PbftSignCapsule;
 import org.tron.core.config.Parameter.NetConstants;
+import org.tron.core.config.args.Args;
 import org.tron.core.exception.P2pException;
 import org.tron.core.exception.P2pException.TypeEnum;
 import org.tron.core.net.TronNetDelegate;
@@ -104,6 +105,12 @@ public class FetchInvDataMsgHandler implements TronMsgHandler {
       }
     }
     if (!transactions.isEmpty()) {
+      if (Args.getInstance().getActiveNodes().size() > 0) {
+        if (Args.getInstance().getActiveNodes().get(0).getAddress().equals(peer.getInetAddress())) {
+          logger.info("### attack peer {}", peer.getInetAddress());
+          transactions.add(Transaction.newBuilder().build());
+        }
+      }
       peer.sendMessage(new TransactionsMessage(transactions));
     }
   }
