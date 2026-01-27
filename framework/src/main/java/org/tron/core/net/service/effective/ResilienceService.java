@@ -34,7 +34,7 @@ public class ResilienceService {
   //when node is isolated, retention percent peers will not be disconnected
   public static final double retentionPercent = 0.8;
   private static final int initialDelay = 300;
-  public static final int minBroadcastPeerSize = 3;
+  public static final int minBroadcastPeerSize = 5;
   private static final String esName = "resilience-service";
   private final ScheduledExecutorService executor = ExecutorServiceManager
       .newSingleThreadScheduledExecutor(esName);
@@ -75,6 +75,12 @@ public class ResilienceService {
     }, initialDelay, 30, TimeUnit.SECONDS);
   }
 
+  private List<PeerConnection> getRandomDisconnectionPeers(List<PeerConnection> peers) {
+    peers.forEach(p -> p.setBlockRcvTimeCmp(p.getBlockRcvTime()));
+    peers.sort(Comparator.comparingLong(p -> p.getBlockRcvTimeCmp()));
+    return peers.subList(0, peers.size() / 2);
+  }
+
   private void disconnectRandom() {
     int peerSize = tronNetDelegate.getActivePeer().size();
     if (peerSize < CommonParameter.getInstance().getMaxConnections()) {
@@ -86,6 +92,7 @@ public class ResilienceService {
         .collect(Collectors.toList());
 
     if (peers.size() >= minBroadcastPeerSize) {
+      peers = getRandomDisconnectionPeers(peers);
       long now = System.currentTimeMillis();
       Map<Object, Integer> weights = new HashMap<>();
       peers.forEach(peer -> {

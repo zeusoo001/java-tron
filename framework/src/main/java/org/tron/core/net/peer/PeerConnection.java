@@ -163,6 +163,12 @@ public class PeerConnection {
   private volatile boolean needSyncFromUs = true;
   @Getter
   private P2pRateLimiter p2pRateLimiter = new P2pRateLimiter();
+  @Setter
+  @Getter
+  private volatile long blockRcvTime;
+  @Setter
+  @Getter
+  private volatile long blockRcvTimeCmp;
 
   public void setChannel(Channel channel) {
     this.channel = channel;

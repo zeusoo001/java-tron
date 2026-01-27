@@ -38,8 +38,10 @@ public class InventoryMsgHandler implements TronMsgHandler {
     for (Sha256Hash id : inventoryMessage.getHashList()) {
       Item item = new Item(id, type);
       peer.getAdvInvReceive().put(item, System.currentTimeMillis());
-      advService.addInv(item);
-      if (type.equals(InventoryType.BLOCK) && peer.getAdvInvSpread().getIfPresent(item) == null) {
+      boolean isSuccess = advService.addInv(item);
+      if (isSuccess
+          && type.equals(InventoryType.BLOCK)
+          && peer.getAdvInvSpread().getIfPresent(item) == null) {
         peer.setLastInteractiveTime(System.currentTimeMillis());
       }
     }
