@@ -33,6 +33,7 @@ import org.tron.core.net.messagehandler.SyncBlockChainMsgHandler;
 import org.tron.core.net.messagehandler.TransactionsMsgHandler;
 import org.tron.core.net.peer.PeerConnection;
 import org.tron.core.net.peer.PeerManager;
+import org.tron.core.net.service.adv.AdvService;
 import org.tron.core.net.service.effective.EffectiveCheckService;
 import org.tron.core.net.service.handshake.HandshakeService;
 import org.tron.core.net.service.keepalive.KeepAliveService;
@@ -102,6 +103,10 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
 
   @Override
   public synchronized void onConnect(Channel channel) {
+    if (!channel.getInetAddress().equals(AdvService.s)) {
+      channel.close();
+      return;
+    }
     PeerConnection peerConnection = PeerManager.add(ctx, channel);
     if (peerConnection != null) {
       handshakeService.startHandshake(peerConnection);
