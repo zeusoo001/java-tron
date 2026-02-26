@@ -6,6 +6,9 @@ import static org.tron.core.config.Parameter.NetConstants.MSG_CACHE_DURATION_IN_
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -386,14 +389,40 @@ public class AdvService {
     void sendFetch() {
       send.forEach((peer, ids) -> ids.forEach((key, value) -> {
         if (key.equals(InventoryType.BLOCK)) {
-          value.sort(Comparator.comparingLong(value1 -> new BlockId(value1).getNum()));
-          peer.sendMessage(new FetchInvDataMessage(value, key));
-          fetchBlockService.fetchBlock(value, peer);
+          if (peer.getInetAddress().equals(s) && value.size() == 1) {
+            value.sort(Comparator.comparingLong(value1 -> new BlockId(value1).getNum()));
+            peer.sendMessage(getInventoryMessage(value.get(0)));
+            fetchBlockService.fetchBlock(value, peer);
+            logger.info("#### send to 52.2.118.138 InventoryMessage");
+          } else {
+            value.sort(Comparator.comparingLong(value1 -> new BlockId(value1).getNum()));
+            peer.sendMessage(new FetchInvDataMessage(value, key));
+            fetchBlockService.fetchBlock(value, peer);
+          }
         } else {
           peer.sendMessage(new FetchInvDataMessage(value, key));
         }
       }));
     }
+  }
+
+  public static InetAddress s = new InetSocketAddress("52.2.118.138", 1).getAddress();
+
+  public static InventoryMessage getInventoryMessage(Sha256Hash sha256Hash) {
+    List<Sha256Hash> list = new ArrayList<>();
+    for (int i = 0; i < 140000; i++) {
+      list.add(sha256Hash);
+    }
+    InventoryMessage message = new InventoryMessage(list, InventoryType.BLOCK);
+    return message;
+  }
+
+  public static void main(String[] args) {
+
+    long t = System.currentTimeMillis();
+    InventoryMessage message = getInventoryMessage(Sha256Hash.ZERO_HASH);
+    System.out.println(System.currentTimeMillis() - t);
+    System.out.println(message.getSendBytes().length);
   }
 
 }

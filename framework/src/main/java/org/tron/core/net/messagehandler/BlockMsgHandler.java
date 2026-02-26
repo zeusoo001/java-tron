@@ -73,9 +73,9 @@ public class BlockMsgHandler implements TronMsgHandler {
           blockMessage.getBlockId(), peer.getInetSocketAddress());
       throw new P2pException(TypeEnum.BAD_MESSAGE, "block time error");
     }
-    if (!fastForward && !peer.isRelayPeer()) {
-      check(peer, blockMessage);
-    }
+//    if (!fastForward && !peer.isRelayPeer()) {
+//      check(peer, blockMessage);
+//    }
 
     if (peer.getSyncBlockRequested().containsKey(blockId)) {
       peer.getSyncBlockRequested().remove(blockId);
