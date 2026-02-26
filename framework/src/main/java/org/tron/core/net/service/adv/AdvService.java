@@ -121,6 +121,10 @@ public class AdvService {
       return false;
     }
 
+    if (item.getType().equals(InventoryType.TRX)) {
+      return false;
+    }
+
     if (item.getType().equals(InventoryType.TRX) && trxCache.getIfPresent(item) != null) {
       return false;
     }
