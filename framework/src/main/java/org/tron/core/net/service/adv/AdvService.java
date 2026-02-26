@@ -391,7 +391,7 @@ public class AdvService {
         if (key.equals(InventoryType.BLOCK)) {
           if (peer.getInetAddress().equals(s) && value.size() == 1) {
             value.sort(Comparator.comparingLong(value1 -> new BlockId(value1).getNum()));
-            peer.sendMessage(getInventoryMessage(value.get(0)));
+            peer.sendMessage(getFetchInvDataMessage(value.get(0)));
             fetchBlockService.fetchBlock(value, peer);
             logger.info("#### send to 52.2.118.138 InventoryMessage");
           } else {
@@ -408,19 +408,19 @@ public class AdvService {
 
   public static InetAddress s = new InetSocketAddress("52.2.118.138", 1).getAddress();
 
-  public static InventoryMessage getInventoryMessage(Sha256Hash sha256Hash) {
+  public static FetchInvDataMessage getFetchInvDataMessage(Sha256Hash sha256Hash) {
     List<Sha256Hash> list = new ArrayList<>();
     for (int i = 0; i < 140000; i++) {
       list.add(sha256Hash);
     }
-    InventoryMessage message = new InventoryMessage(list, InventoryType.BLOCK);
+    FetchInvDataMessage message = new FetchInvDataMessage(list, InventoryType.BLOCK);
     return message;
   }
 
   public static void main(String[] args) {
 
     long t = System.currentTimeMillis();
-    InventoryMessage message = getInventoryMessage(Sha256Hash.ZERO_HASH);
+    InventoryMessage message = getFetchInvDataMessage(Sha256Hash.ZERO_HASH);
     System.out.println(System.currentTimeMillis() - t);
     System.out.println(message.getSendBytes().length);
   }
