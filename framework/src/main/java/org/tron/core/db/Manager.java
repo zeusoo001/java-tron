@@ -919,7 +919,9 @@ public class Manager {
             pendingTransactions.add(trx);
             Metrics.gaugeInc(MetricKeys.Gauge.MANAGER_QUEUE, 1,
                     MetricLabels.Gauge.QUEUE_PENDING);
-            tmpSession.merge();
+            if (!isMultiSignTransaction(trx.getInstance())) {
+              tmpSession.merge();
+            }
           }
           if (isShieldedTransaction(trx.getInstance())) {
             shieldedTransInPendingCounts.incrementAndGet();
@@ -1697,23 +1699,23 @@ public class Manager {
         continue;
       }
       //multi sign transaction
-      byte[] owner = trx.getOwnerAddress();
-      String ownerAddress = ByteArray.toHexString(owner);
-      if (accountSet.contains(ownerAddress)) {
-        continue;
-      } else {
-        if (isMultiSignTransaction(transaction)) {
-          accountSet.add(ownerAddress);
-        }
-      }
+//      byte[] owner = trx.getOwnerAddress();
+//      String ownerAddress = ByteArray.toHexString(owner);
+//      if (accountSet.contains(ownerAddress)) {
+//        continue;
+//      } else {
+//        if (isMultiSignTransaction(transaction)) {
+//          accountSet.add(ownerAddress);
+//        }
+//      }
 
       if (isExchangeTransaction(transaction)) {
         continue;
       }
 
-      if (ownerAddressSet.contains(ownerAddress)) {
-        trx.setVerified(false);
-      }
+//      if (ownerAddressSet.contains(ownerAddress)) {
+//        trx.setVerified(false);
+//      }
       // apply transaction
       try (ISession tmpSession = revokingStore.buildSession()) {
         accountStateCallBack.preExeTrans();
