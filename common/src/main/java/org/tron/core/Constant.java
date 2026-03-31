@@ -108,6 +108,7 @@ public class Constant {
   public static final String NODE_MAX_ACTIVE_NODES = "node.maxActiveNodes";
   public static final String NODE_MAX_ACTIVE_NODES_WITH_SAME_IP = "node.maxActiveNodesWithSameIp";
   public static final String NODE_MAX_TPS = "node.maxTps";
+  public static final String NODE_MAX_BLOCK_INV_COUNT = "node.maxBlockInvCount";
   public static final String NODE_CONNECT_FACTOR = "node.connectFactor";
   public static final String NODE_ACTIVE_CONNECT_FACTOR = "node.activeConnectFactor";
 

@@ -174,6 +174,9 @@ public class CommonParameter {
   public int maxTps;
   @Getter
   @Setter
+  public int maxBlockInvCount;
+  @Getter
+  @Setter
   public int minParticipationRate;
   @Getter
   public P2pConfig p2pConfig;

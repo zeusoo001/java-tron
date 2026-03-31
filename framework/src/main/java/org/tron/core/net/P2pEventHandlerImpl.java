@@ -92,6 +92,8 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
 
   private int maxCountIn10s = Args.getInstance().getMaxTps() * 10;
 
+  private int maxBlockInvCountIn10s = Args.getInstance().getMaxBlockInvCount() * 10;
+
   public P2pEventHandlerImpl() {
     Set<Byte> set = new HashSet<>();
     for (byte i = 0; i < MESSAGE_MAX_TYPE; i++) {
@@ -152,15 +154,29 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
       if (INVENTORY.equals(type)) {
         InventoryMessage message = (InventoryMessage) msg;
         Protocol.Inventory.InventoryType inventoryType = message.getInventoryType();
-        int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement
-                .getCount(10);
-        if (inventoryType.equals(Protocol.Inventory.InventoryType.TRX) && count > maxCountIn10s) {
-          logger.warn("Drop inventory from Peer {}, cur:{}, max:{}",
-                  peer.getInetAddress(), count, maxCountIn10s);
-          if (Args.getInstance().isOpenPrintLog()) {
-            logger.warn("[overload]Drop tx list is: {}", ((InventoryMessage) msg).getHashList());
+        int invSize = message.getInventory().getIdsCount();
+        if (inventoryType.equals(Protocol.Inventory.InventoryType.TRX)) {
+          int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement
+                  .getCount(10);
+          if (count + invSize > maxCountIn10s) {
+            logger.warn("Drop trx inventory from peer {}, cur:{}, incoming:{}, max:{}",
+                    peer.getInetAddress(), count, invSize, maxCountIn10s);
+            if (Args.getInstance().isOpenPrintLog()) {
+              logger.warn("[overload]Drop tx list is: {}", message.getHashList());
+            }
+            return;
           }
-          return;
+        } else if (inventoryType.equals(Protocol.Inventory.InventoryType.BLOCK)) {
+          int count = peer.getPeerStatistics().messageStatistics.tronInBlockInventoryElement
+                  .getCount(10);
+          if (count + invSize > maxBlockInvCountIn10s) {
+            logger.warn("Drop block inventory from peer {}, cur:{}, incoming:{}, max:{}",
+                    peer.getInetAddress(), count, invSize, maxBlockInvCountIn10s);
+            if (Args.getInstance().isOpenPrintLog()) {
+              logger.warn("[overload]Drop block list is: {}", message.getHashList());
+            }
+            return;
+          }
         }
       }
 
