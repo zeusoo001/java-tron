@@ -1,5 +1,7 @@
 package org.tron.core.net.messagehandler;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -99,6 +101,7 @@ public class TransactionsMsgHandler implements TronMsgHandler {
   }
 
   private void check(PeerConnection peer, TransactionsMessage msg) throws P2pException {
+    Set<Item> seen = new HashSet<>();
     for (Transaction trx : msg.getTransactions().getTransactionsList()) {
       Item item = new Item(new TransactionMessage(trx).getMessageId(), InventoryType.TRX);
       if (!peer.getAdvInvRequest().containsKey(item)) {
@@ -108,6 +111,10 @@ public class TransactionsMsgHandler implements TronMsgHandler {
       if (trx.getRawData().getContractCount() < 1) {
         throw new P2pException(TypeEnum.BAD_TRX,
             "tx " + item.getHash() + " contract size should be greater than 0");
+      }
+      if (!seen.add(item)) {
+        throw new P2pException(TypeEnum.BAD_MESSAGE,
+            "Duplicate trx " + item.getHash() + " in transaction list.");
       }
     }
   }

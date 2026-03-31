@@ -21,6 +21,7 @@ import org.tron.common.runtime.TvmTestUtils;
 import org.tron.common.utils.ByteArray;
 import org.tron.core.Constant;
 import org.tron.core.config.args.Args;
+import org.tron.core.exception.P2pException;
 import org.tron.core.net.TronNetDelegate;
 import org.tron.core.net.message.adv.TransactionMessage;
 import org.tron.core.net.message.adv.TransactionsMessage;
@@ -127,6 +128,54 @@ public class TransactionsMsgHandlerTest extends BaseTest {
       }
     } catch (Exception e) {
       Assert.fail();
+    } finally {
+      transactionsMsgHandler.close();
+    }
+  }
+
+  @Test
+  public void testDuplicateTransactionInList() {
+    TransactionsMsgHandler transactionsMsgHandler = new TransactionsMsgHandler();
+    try {
+      transactionsMsgHandler.init();
+
+      PeerConnection peer = Mockito.mock(PeerConnection.class);
+
+      BalanceContract.TransferContract transferContract = BalanceContract.TransferContract
+          .newBuilder()
+          .setAmount(10)
+          .setOwnerAddress(ByteString.copyFrom(ByteArray.fromHexString("121212a9cf")))
+          .setToAddress(ByteString.copyFrom(ByteArray.fromHexString("232323a9cf"))).build();
+
+      Protocol.Transaction trx = Protocol.Transaction.newBuilder().setRawData(
+          Protocol.Transaction.raw.newBuilder()
+              .setRefBlockNum(1)
+              .addContract(
+                  Protocol.Transaction.Contract.newBuilder()
+                      .setType(Protocol.Transaction.Contract.ContractType.TransferContract)
+                      .setParameter(Any.pack(transferContract)).build()).build())
+          .build();
+
+      Item item = new Item(new TransactionMessage(trx).getMessageId(),
+          Protocol.Inventory.InventoryType.TRX);
+      Map<Item, Long> advInvRequest = new ConcurrentHashMap<>();
+      advInvRequest.put(item, 0L);
+      Mockito.when(peer.getAdvInvRequest()).thenReturn(advInvRequest);
+
+      // 构造包含重复交易的列表
+      List<Protocol.Transaction> transactionList = new ArrayList<>();
+      transactionList.add(trx);
+      transactionList.add(trx);
+
+      try {
+        transactionsMsgHandler.processMessage(peer, new TransactionsMessage(transactionList));
+        Assert.fail("Expected P2pException for duplicate transaction");
+      } catch (P2pException e) {
+        Assert.assertEquals(P2pException.TypeEnum.BAD_MESSAGE, e.getType());
+        Assert.assertTrue(e.getMessage().contains("Duplicate trx"));
+      }
+    } catch (Exception e) {
+      Assert.fail("Unexpected exception: " + e.getMessage());
     } finally {
       transactionsMsgHandler.close();
     }
