@@ -152,15 +152,18 @@ public class P2pEventHandlerImpl extends P2pEventHandler {
       if (INVENTORY.equals(type)) {
         InventoryMessage message = (InventoryMessage) msg;
         Protocol.Inventory.InventoryType inventoryType = message.getInventoryType();
-        int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement
-                .getCount(10);
-        if (inventoryType.equals(Protocol.Inventory.InventoryType.TRX) && count > maxCountIn10s) {
-          logger.warn("Drop inventory from Peer {}, cur:{}, max:{}",
-                  peer.getInetAddress(), count, maxCountIn10s);
-          if (Args.getInstance().isOpenPrintLog()) {
-            logger.warn("[overload]Drop tx list is: {}", ((InventoryMessage) msg).getHashList());
+        if (inventoryType.equals(Protocol.Inventory.InventoryType.TRX)) {
+          int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement
+                  .getCount(10);
+          int size = message.getInventory().getIdsCount();
+          if ((count + size) > maxCountIn10s) {
+            logger.warn("Drop inventory from Peer {}, cur:{}, size:{}, max:{}",
+                    peer.getInetAddress(), count, size, maxCountIn10s);
+            if (Args.getInstance().isOpenPrintLog()) {
+              logger.warn("[overload]Drop tx list is: {}", message.getHashList());
+            }
+            return;
           }
-          return;
         }
       }
 

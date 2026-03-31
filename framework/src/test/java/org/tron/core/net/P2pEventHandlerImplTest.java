@@ -63,6 +63,7 @@ public class P2pEventHandlerImplTest extends BaseTest {
 
     Assert.assertEquals(10, count);
 
+    // maxCountIn10s = maxTps(10) * 10 = 100; count(10) + size(100) = 110 > 100, should be dropped
     list.clear();
     for (int i = 0; i < 100; i++) {
       list.add(new Sha256Hash(i, new byte[32]));
@@ -74,8 +75,9 @@ public class P2pEventHandlerImplTest extends BaseTest {
 
     count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement.getCount(10);
 
-    Assert.assertEquals(110, count);
+    Assert.assertEquals(10, count);
 
+    // count is still 10; count(10) + size(100) = 110 > 100, should also be dropped
     list.clear();
     for (int i = 0; i < 100; i++) {
       list.add(new Sha256Hash(i, new byte[32]));
@@ -87,7 +89,7 @@ public class P2pEventHandlerImplTest extends BaseTest {
 
     count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement.getCount(10);
 
-    Assert.assertEquals(110, count);
+    Assert.assertEquals(10, count);
 
     list.clear();
     for (int i = 0; i < 200; i++) {
@@ -115,6 +117,36 @@ public class P2pEventHandlerImplTest extends BaseTest {
 
     Assert.assertEquals(300, count);
 
+  }
+
+  @Test
+  public void testProcessInventoryMessageSingleLargeBypass() throws Exception {
+    // Verifies that a single oversized inventory message cannot bypass the rate limit.
+    // A malicious node could previously send one message with 140k entries when count=0,
+    // since the old check only tested count > maxCountIn10s (ignoring the current message size).
+    CommonParameter parameter = CommonParameter.getInstance();
+    parameter.setMaxTps(10); // maxCountIn10s = 100
+
+    PeerStatistics peerStatistics = new PeerStatistics();
+    PeerConnection peer = mock(PeerConnection.class);
+    Mockito.when(peer.getPeerStatistics()).thenReturn(peerStatistics);
+
+    P2pEventHandlerImpl p2pEventHandler = new P2pEventHandlerImpl();
+    Method method = p2pEventHandler.getClass()
+            .getDeclaredMethod("processMessage", PeerConnection.class, byte[].class);
+    method.setAccessible(true);
+
+    // count=0; single message with 140000 entries: 0 + 140000 = 140000 > 100, must be dropped
+    List<Sha256Hash> list = new ArrayList<>();
+    for (int i = 0; i < 140000; i++) {
+      list.add(new Sha256Hash(i, new byte[32]));
+    }
+
+    InventoryMessage msg = new InventoryMessage(list, Protocol.Inventory.InventoryType.TRX);
+    method.invoke(p2pEventHandler, peer, msg.getSendBytes());
+
+    int count = peer.getPeerStatistics().messageStatistics.tronInTrxInventoryElement.getCount(10);
+    Assert.assertEquals(0, count);
   }
 
   @Test
