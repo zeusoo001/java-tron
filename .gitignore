@@ -3,6 +3,10 @@
 *iml
 .DS_Store
 
+#claude
+.claude
+CLAUDE.md
+
 # gradle
 .gradle
 build
@@ -57,3 +61,6 @@ Wallet
 
 /framework/propPath
 .cache
+
+# local security scan reports (pre-commit hook output)
+.security-reports/

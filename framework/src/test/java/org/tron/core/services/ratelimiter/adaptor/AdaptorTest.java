@@ -2,7 +2,6 @@ package org.tron.core.services.ratelimiter.adaptor;
 
 import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.RateLimiter;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import org.junit.Assert;
 import org.junit.Test;
@@ -127,6 +126,10 @@ public class AdaptorTest {
     boolean flag = strategy.tryAcquire();
     Assert.assertTrue(flag);
 
+    // Guava SmoothBursty "pre-bills" the next slot when stored permits are
+    // consumed without cost: nextFreeTicketMicros stays at the resync time,
+    // so the immediately following call still passes (waitLength = 0) while
+    // advancing the ticket to 1 s in the future.
     flag = strategy.tryAcquire();
     Assert.assertTrue(flag);
 

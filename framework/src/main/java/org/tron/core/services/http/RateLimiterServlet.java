@@ -91,10 +91,11 @@ public abstract class RateLimiterServlet extends HttpServlet {
 
     RuntimeData runtimeData = new RuntimeData(req);
     IRateLimiter rateLimiter = container.get(KEY_PREFIX_HTTP, getClass().getSimpleName());
-    boolean acquireResource = GlobalRateLimiter.tryAcquire(runtimeData);
-    if (acquireResource && rateLimiter != null) {
-      acquireResource = rateLimiter.tryAcquire(runtimeData);
-    }
+
+    // Check per-endpoint first to avoid consuming global IP/QPS quota for requests
+    // that would be rejected by the per-endpoint limiter anyway.
+    boolean perEndpointAcquired = rateLimiter == null || rateLimiter.tryAcquire(runtimeData);
+    boolean acquireResource = perEndpointAcquired && GlobalRateLimiter.tryAcquire(runtimeData);
 
     String url = Strings.isNullOrEmpty(req.getRequestURI())
         ? MetricLabels.UNDEFINED : req.getRequestURI();
@@ -115,7 +116,9 @@ public abstract class RateLimiterServlet extends HttpServlet {
     } catch (Exception unexpected) {
       logger.error("Http Api {}, Method:{}. Error：", url, req.getMethod(), unexpected);
     } finally {
-      if (rateLimiter instanceof IPreemptibleRateLimiter && acquireResource) {
+      // Release whenever the per-endpoint permit was acquired (covers both the normal
+      // completion path and the case where GlobalRateLimiter rejected the request).
+      if (rateLimiter instanceof IPreemptibleRateLimiter && perEndpointAcquired) {
         ((IPreemptibleRateLimiter) rateLimiter).release();
       }
     }

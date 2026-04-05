@@ -20,7 +20,6 @@ import org.tron.common.parameter.RateLimiterInitialization.RpcRateLimiterItem;
 import org.tron.core.config.args.Args;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
-import org.tron.core.services.http.Util;
 import org.tron.core.services.ratelimiter.adapter.DefaultBaseQqsAdapter;
 import org.tron.core.services.ratelimiter.adapter.IPreemptibleRateLimiter;
 import org.tron.core.services.ratelimiter.adapter.IRateLimiter;
@@ -108,37 +107,46 @@ public class RateLimiterInterceptor implements ServerInterceptor {
     Listener<ReqT> listener = new ServerCall.Listener<ReqT>() {};
 
     RuntimeData runtimeData = new RuntimeData(call);
-    boolean acquireResource = GlobalRateLimiter.tryAcquire(runtimeData);
-    if (acquireResource && rateLimiter != null) {
-      acquireResource = rateLimiter.tryAcquire(runtimeData);
+    // Check per-endpoint first to avoid consuming global IP/QPS quota for requests
+    // that would be rejected by the per-endpoint limiter anyway.
+    boolean perEndpointAcquired = rateLimiter == null || rateLimiter.tryAcquire(runtimeData);
+    boolean acquireResource = perEndpointAcquired && GlobalRateLimiter.tryAcquire(runtimeData);
+
+    if (!acquireResource) {
+      // Release the per-endpoint permit when global rejected, to avoid semaphore leak.
+      if (rateLimiter instanceof IPreemptibleRateLimiter && perEndpointAcquired) {
+        ((IPreemptibleRateLimiter) rateLimiter).release();
+      }
+      call.close(Status.fromCode(Code.RESOURCE_EXHAUSTED), new Metadata());
+      return listener;
     }
 
     try {
-      if (acquireResource) {
-        call.setMessageCompression(true);
-        ServerCall.Listener<ReqT> delegate = next.startCall(call, headers);
+      call.setMessageCompression(true);
+      ServerCall.Listener<ReqT> delegate = next.startCall(call, headers);
 
-        listener = new SimpleForwardingServerCallListener<ReqT>(delegate) {
-          @Override
-          public void onComplete() {
-            // must release the permit to avoid the leak of permit.
-            if (rateLimiter instanceof IPreemptibleRateLimiter) {
-              ((IPreemptibleRateLimiter) rateLimiter).release();
-            }
+      listener = new SimpleForwardingServerCallListener<ReqT>(delegate) {
+        @Override
+        public void onComplete() {
+          // must release the permit to avoid the leak of permit.
+          if (rateLimiter instanceof IPreemptibleRateLimiter) {
+            ((IPreemptibleRateLimiter) rateLimiter).release();
           }
+        }
 
-          @Override
-          public void onCancel() {
-            // must release the permit to avoid the leak of permit.
-            if (rateLimiter instanceof IPreemptibleRateLimiter) {
-              ((IPreemptibleRateLimiter) rateLimiter).release();
-            }
+        @Override
+        public void onCancel() {
+          // must release the permit to avoid the leak of permit.
+          if (rateLimiter instanceof IPreemptibleRateLimiter) {
+            ((IPreemptibleRateLimiter) rateLimiter).release();
           }
-        };
-      } else {
-        call.close(Status.fromCode(Code.RESOURCE_EXHAUSTED), new Metadata());
-      }
+        }
+      };
     } catch (Exception e) {
+      // next.startCall() failed — release the permit that was already acquired.
+      if (rateLimiter instanceof IPreemptibleRateLimiter) {
+        ((IPreemptibleRateLimiter) rateLimiter).release();
+      }
       String grpcFailMeterName = MetricsKey.NET_API_DETAIL_FAIL_QPS
           + call.getMethodDescriptor().getFullMethodName();
       MetricsUtil.meterMark(MetricsKey.NET_API_FAIL_QPS);

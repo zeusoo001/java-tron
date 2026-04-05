@@ -19,19 +19,18 @@ public class GlobalRateLimiter {
   private static RateLimiter rateLimiter = RateLimiter.create(QPS);
 
   public static boolean tryAcquire(RuntimeData runtimeData) {
-    if (!rateLimiter.tryAcquire()) {
-      return false;
-    }
     String ip = runtimeData.getRemoteAddr();
-    if (Strings.isNullOrEmpty(ip)) {
-      return true;
+    if (!Strings.isNullOrEmpty(ip)) {
+      RateLimiter r = cache.getIfPresent(ip);
+      if (r == null) {
+        r = RateLimiter.create(IP_QPS);
+        cache.put(ip, r);
+      }
+      if (!r.tryAcquire()) {
+        return false;
+      }
     }
-    RateLimiter r = cache.getIfPresent(ip);
-    if (r == null) {
-      r = RateLimiter.create(IP_QPS);
-      cache.put(ip, r);
-    }
-    return r.tryAcquire();
+    return rateLimiter.tryAcquire();
   }
 
 }
