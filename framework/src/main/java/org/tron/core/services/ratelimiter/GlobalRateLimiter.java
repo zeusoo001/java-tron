@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.tron.core.config.args.Args;
 
@@ -18,18 +19,22 @@ public class GlobalRateLimiter {
 
   private static RateLimiter rateLimiter = RateLimiter.create(QPS);
 
-  public static void acquire(RuntimeData runtimeData) {
-    rateLimiter.acquire();
+  public static boolean tryAcquire(RuntimeData runtimeData) {
     String ip = runtimeData.getRemoteAddr();
-    if (Strings.isNullOrEmpty(ip)) {
-      return;
+    if (!Strings.isNullOrEmpty(ip)) {
+      RateLimiter r;
+      try {
+        // cache.get is atomic: only one loader executes per key under concurrent requests,
+        // preventing multiple RateLimiter instances from being created for the same IP.
+        r = cache.get(ip, () -> RateLimiter.create(IP_QPS));
+      } catch (ExecutionException e) {
+        r = RateLimiter.create(IP_QPS);
+      }
+      if (!r.tryAcquire()) {
+        return false;
+      }
     }
-    RateLimiter r = cache.getIfPresent(ip);
-    if (r == null) {
-      r = RateLimiter.create(IP_QPS);
-      cache.put(ip, r);
-    }
-    r.acquire();
+    return rateLimiter.tryAcquire();
   }
 
 }
