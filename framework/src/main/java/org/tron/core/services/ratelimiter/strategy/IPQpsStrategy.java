@@ -19,14 +19,13 @@ public class IPQpsStrategy extends Strategy {
     super(paramString);
   }
 
-  public boolean acquire(String ip) {
+  public boolean tryAcquire(String ip) {
     RateLimiter limiter = ipLimiter.getIfPresent(ip);
     if (limiter == null) {
       limiter = newRateLimiter();
       ipLimiter.put(ip, limiter);
     }
-    limiter.acquire();
-    return true;
+    return limiter.tryAcquire();
   }
 
   private RateLimiter newRateLimiter() {
