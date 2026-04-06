@@ -119,6 +119,9 @@ public class CommonParameter {
   public int maxTps; // clearParam: 1000
   @Getter
   @Setter
+  public int maxBlockInvPerPeer = 10; // clearParam: 10
+  @Getter
+  @Setter
   public int minParticipationRate;
   @Getter
   public P2pConfig p2pConfig;

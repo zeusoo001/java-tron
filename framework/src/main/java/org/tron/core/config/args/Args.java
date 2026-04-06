@@ -401,6 +401,9 @@ public class Args extends CommonParameter {
     PARAMETER.maxTps = config.hasPath(ConfigKey.NODE_MAX_TPS)
             ? config.getInt(ConfigKey.NODE_MAX_TPS) : 1000;
 
+    PARAMETER.maxBlockInvPerPeer = config.hasPath(ConfigKey.NODE_MAX_BLOCK_INV_PER_PEER)
+            ? config.getInt(ConfigKey.NODE_MAX_BLOCK_INV_PER_PEER) : 10;
+
     PARAMETER.minParticipationRate =
         config.hasPath(ConfigKey.NODE_MIN_PARTICIPATION_RATE)
             ? config.getInt(ConfigKey.NODE_MIN_PARTICIPATION_RATE)
