@@ -9,7 +9,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.tron.core.Constant;
+import org.tron.common.TestConstants;
 import org.tron.core.config.args.Args;
 
 public class GlobalRateLimiterTest {
@@ -22,7 +22,7 @@ public class GlobalRateLimiterTest {
   @Before
   public void setUp() throws Exception {
     String[] a = new String[0];
-    Args.setParam(a, Constant.TESTNET_CONF);
+    Args.setParam(a, TestConstants.TEST_CONF);
     resetGlobalRateLimiter(2.0, 1.0);
   }
 

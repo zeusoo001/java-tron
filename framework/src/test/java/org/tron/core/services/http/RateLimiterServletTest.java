@@ -17,7 +17,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.tron.core.Constant;
+import org.tron.common.TestConstants;
 import org.tron.core.config.args.Args;
 import org.tron.core.services.ratelimiter.GlobalRateLimiter;
 import org.tron.core.services.ratelimiter.RateLimiterContainer;
@@ -66,7 +66,7 @@ public class RateLimiterServletTest {
    */
   @Before
   public void setUp() throws Exception {
-    Args.setParam(new String[0], Constant.TESTNET_CONF);
+    Args.setParam(new String[0], TestConstants.TEST_CONF);
     servlet = new TestServlet();
     container = new RateLimiterContainer();
     Field f = RateLimiterServlet.class.getDeclaredField("container");

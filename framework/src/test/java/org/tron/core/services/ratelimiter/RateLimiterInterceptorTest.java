@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.tron.core.Constant;
+import org.tron.common.TestConstants;
 import org.tron.core.config.args.Args;
 import org.tron.core.services.ratelimiter.adapter.IPreemptibleRateLimiter;
 import org.tron.core.services.ratelimiter.adapter.IRateLimiter;
@@ -67,7 +67,7 @@ public class RateLimiterInterceptorTest {
    */
   @Before
   public void setUp() throws Exception {
-    Args.setParam(new String[0], Constant.TESTNET_CONF);
+    Args.setParam(new String[0], TestConstants.TEST_CONF);
     interceptor = new RateLimiterInterceptor();
     container = new RateLimiterContainer();
     Field f = RateLimiterInterceptor.class.getDeclaredField("container");
