@@ -782,10 +782,8 @@ public class Args extends CommonParameter {
     if (config.hasPath(ConfigKey.RATE_LIMITER_CIDR)) {
       PARAMETER.rateLimiterCidrRules = config
           .getObjectList(ConfigKey.RATE_LIMITER_CIDR).stream()
-          .map(obj -> new CidrRuleConfig(
-              obj.get("cidr").unwrapped().toString(),
-              Double.parseDouble(obj.get("qps").unwrapped().toString())))
-          .collect(java.util.stream.Collectors.toList());
+          .map(Args::parseCidrRuleConfig)
+          .collect(Collectors.toList());
     }
 
     PARAMETER.rateLimiterSyncBlockChain =
@@ -1289,6 +1287,34 @@ public class Args extends CommonParameter {
     account.setAddress(Commons.decodeFromBase58Check(asset.get("address").unwrapped().toString()));
     account.setBalance(asset.get("balance").unwrapped().toString());
     return account;
+  }
+
+  private static CidrRuleConfig parseCidrRuleConfig(
+      com.typesafe.config.ConfigObject obj) {
+    if (obj.get("cidr") == null) {
+      throw new TronError("rate.limiter.cidr entry is missing required field 'cidr'",
+          TronError.ErrCode.RATE_LIMITER_INIT);
+    }
+    if (obj.get("qps") == null) {
+      throw new TronError("rate.limiter.cidr entry is missing required field 'qps'",
+          TronError.ErrCode.RATE_LIMITER_INIT);
+    }
+    String cidrStr = String.valueOf(obj.get("cidr").unwrapped());
+    String qpsStr  = String.valueOf(obj.get("qps").unwrapped());
+    double qps;
+    try {
+      qps = Double.parseDouble(qpsStr);
+    } catch (NumberFormatException e) {
+      throw new TronError(
+          "rate.limiter.cidr entry has non-numeric 'qps' for cidr=" + cidrStr,
+          e, TronError.ErrCode.RATE_LIMITER_INIT);
+    }
+    if (!Double.isFinite(qps) || qps <= 0) {
+      throw new TronError(
+          "rate.limiter.cidr 'qps' must be a positive finite number for cidr=" + cidrStr,
+          TronError.ErrCode.RATE_LIMITER_INIT);
+    }
+    return new CidrRuleConfig(cidrStr, qps);
   }
 
   private static RateLimiterInitialization getRateLimiterFromConfig(
