@@ -389,6 +389,9 @@ public class CommonParameter {
   @Setter
   public double rateLimiterDisconnect; // clearParam: 1.0
   @Getter
+  @Setter
+  public List<CidrRuleConfig> rateLimiterCidrRules = new ArrayList<>();
+  @Getter
   public DbBackupConfig dbBackupConfig;
   @Getter
   public RocksDbSettings rocksDBCustomSettings;

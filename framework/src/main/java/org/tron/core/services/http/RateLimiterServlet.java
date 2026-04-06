@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import io.prometheus.client.Histogram;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,6 +20,7 @@ import org.tron.core.config.args.Args;
 import org.tron.core.exception.TronError;
 import org.tron.core.services.ratelimiter.GlobalRateLimiter;
 import org.tron.core.services.ratelimiter.RateLimiterContainer;
+import org.tron.core.services.ratelimiter.cidr.CidrRateLimiter;
 import org.tron.core.services.ratelimiter.RuntimeData;
 import org.tron.core.services.ratelimiter.adapter.DefaultBaseQqsAdapter;
 import org.tron.core.services.ratelimiter.adapter.GlobalPreemptibleAdapter;
@@ -95,7 +97,9 @@ public abstract class RateLimiterServlet extends HttpServlet {
     // Check per-endpoint first to avoid consuming global IP/QPS quota for requests
     // that would be rejected by the per-endpoint limiter anyway.
     boolean perEndpointAcquired = rateLimiter == null || rateLimiter.tryAcquire(runtimeData);
-    boolean acquireResource = perEndpointAcquired && GlobalRateLimiter.tryAcquire(runtimeData);
+    boolean acquireResource = perEndpointAcquired
+        && !Optional.of(false).equals(CidrRateLimiter.tryAcquireStatic(runtimeData))
+        && GlobalRateLimiter.tryAcquire(runtimeData);
 
     String url = Strings.isNullOrEmpty(req.getRequestURI())
         ? MetricLabels.UNDEFINED : req.getRequestURI();

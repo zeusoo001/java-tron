@@ -4,13 +4,19 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.tron.common.TestConstants;
+import org.tron.common.parameter.CidrRuleConfig;
 import org.tron.core.config.args.Args;
+import org.tron.core.services.ratelimiter.cidr.CidrRateLimiter;
 
 public class GlobalRateLimiterTest {
 
@@ -24,6 +30,7 @@ public class GlobalRateLimiterTest {
     String[] a = new String[0];
     Args.setParam(a, TestConstants.TEST_CONF);
     resetGlobalRateLimiter(2.0, 1.0);
+    setCidrInstance(Collections.emptyList());  // ensure no CIDR rules bleed between tests
   }
 
   private static void resetGlobalRateLimiter(double globalQps, double ipQps) throws Exception {
@@ -138,6 +145,80 @@ public class GlobalRateLimiterTest {
 
     Assert.assertTrue(GlobalRateLimiter.tryAcquire(runtimeDataFor("2.2.2.2")));
     Assert.assertFalse(GlobalRateLimiter.tryAcquire(runtimeDataFor("2.2.2.2")));
+  }
+
+  // ── CIDR integration tests ────────────────────────────────────────────────
+
+  /**
+   * CIDR rule blocks an IP. tryAcquireStatic returns Optional.of(false).
+   * GlobalRateLimiter must NOT be consulted (global budget preserved).
+   */
+  @Test
+  public void testCidrBlocksBeforeGlobal() throws Exception {
+    resetGlobalRateLimiter(10000.0, 10000.0);
+    setCidrInstance(Collections.singletonList(new CidrRuleConfig("192.168.1.0/24", 1.0)));
+
+    RuntimeData first  = runtimeDataFor("192.168.1.10");
+    RuntimeData second = runtimeDataFor("192.168.1.20");
+
+    // First request consumes the /24 bucket's single token
+    Assert.assertEquals(Optional.of(true),  CidrRateLimiter.tryAcquireStatic(first));
+    // Second request — same rule, bucket exhausted
+    Assert.assertEquals(Optional.of(false), CidrRateLimiter.tryAcquireStatic(second));
+  }
+
+  /**
+   * IP outside all CIDR rules returns Optional.empty() → GlobalRateLimiter handles it.
+   */
+  @Test
+  public void testNoCidrMatchFallsBackToGlobal() throws Exception {
+    resetGlobalRateLimiter(1.0, 10000.0);  // global qps=1
+    setCidrInstance(Collections.singletonList(new CidrRuleConfig("10.0.0.0/8", 1000.0)));
+
+    RuntimeData outside = runtimeDataFor("172.16.0.1");
+    // CIDR: no match → empty
+    Assert.assertFalse(CidrRateLimiter.tryAcquireStatic(outside).isPresent());
+    // GlobalRateLimiter: first call passes, second exhausted
+    Assert.assertTrue(GlobalRateLimiter.tryAcquire(outside));
+    Assert.assertFalse(GlobalRateLimiter.tryAcquire(outside));
+  }
+
+  /**
+   * IPv4-mapped IPv6 (::ffff:x.x.x.x) is normalized to IPv4 and matches an IPv4 CIDR rule.
+   */
+  @Test
+  public void testIpv4MappedIpv6MatchesCidrRule() throws Exception {
+    setCidrInstance(Collections.singletonList(new CidrRuleConfig("10.0.0.0/8", 1.0)));
+    RuntimeData mapped = runtimeDataFor("::ffff:10.0.0.5");
+    Optional<Boolean> result = CidrRateLimiter.tryAcquireStatic(mapped);
+    Assert.assertTrue(result.isPresent());
+    Assert.assertTrue(result.get());  // first token
+  }
+
+  /**
+   * Most-specific CIDR rule wins: /32 is checked before /24.
+   */
+  @Test
+  public void testMostSpecificCidrWinsInIntegration() throws Exception {
+    setCidrInstance(Arrays.asList(
+        new CidrRuleConfig("10.0.0.0/24", 1000.0),
+        new CidrRuleConfig("10.0.0.1/32",    1.0)));
+
+    RuntimeData specific = runtimeDataFor("10.0.0.1");
+    Assert.assertEquals(Optional.of(true),  CidrRateLimiter.tryAcquireStatic(specific));
+    Assert.assertEquals(Optional.of(false), CidrRateLimiter.tryAcquireStatic(specific));
+
+    // 10.0.0.2 hits /24 (qps=1000) — still passes
+    RuntimeData other = runtimeDataFor("10.0.0.2");
+    Assert.assertEquals(Optional.of(true), CidrRateLimiter.tryAcquireStatic(other));
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private static void setCidrInstance(List<CidrRuleConfig> rules) throws Exception {
+    Field f = CidrRateLimiter.class.getDeclaredField("instance");
+    f.setAccessible(true);
+    f.set(null, new CidrRateLimiter(rules));
   }
 
   @AfterClass

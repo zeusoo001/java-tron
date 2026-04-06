@@ -61,6 +61,7 @@ import org.tron.common.logsfilter.FilterQuery;
 import org.tron.common.logsfilter.TriggerConfig;
 import org.tron.common.logsfilter.trigger.ContractEventTrigger;
 import org.tron.common.logsfilter.trigger.ContractLogTrigger;
+import org.tron.common.parameter.CidrRuleConfig;
 import org.tron.common.parameter.CommonParameter;
 import org.tron.common.parameter.RateLimiterInitialization;
 import org.tron.common.setting.RocksDbSettings;
@@ -777,6 +778,15 @@ public class Args extends CommonParameter {
         .getInt(ConfigKey.RATE_LIMITER_GLOBAL_API_QPS) : 1000;
 
     PARAMETER.rateLimiterInitialization = getRateLimiterFromConfig(config);
+
+    if (config.hasPath(ConfigKey.RATE_LIMITER_CIDR)) {
+      PARAMETER.rateLimiterCidrRules = config
+          .getObjectList(ConfigKey.RATE_LIMITER_CIDR).stream()
+          .map(obj -> new CidrRuleConfig(
+              obj.get("cidr").unwrapped().toString(),
+              Double.parseDouble(obj.get("qps").unwrapped().toString())))
+          .collect(java.util.stream.Collectors.toList());
+    }
 
     PARAMETER.rateLimiterSyncBlockChain =
         config.hasPath(ConfigKey.RATE_LIMITER_P2P_SYNC_BLOCK_CHAIN) ? config

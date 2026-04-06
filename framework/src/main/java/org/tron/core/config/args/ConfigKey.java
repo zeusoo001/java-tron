@@ -304,6 +304,7 @@ final class ConfigKey {
       "rate.limiter.p2p.syncBlockChain";
   public static final String RATE_LIMITER_P2P_FETCH_INV_DATA = "rate.limiter.p2p.fetchInvData";
   public static final String RATE_LIMITER_P2P_DISCONNECT = "rate.limiter.p2p.disconnect";
+  public static final String RATE_LIMITER_CIDR = "rate.limiter.cidr";
 
   // metrics
   public static final String METRICS_STORAGE_ENABLE = "node.metrics.storageEnable";

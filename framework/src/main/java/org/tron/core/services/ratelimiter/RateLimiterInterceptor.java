@@ -13,6 +13,7 @@ import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.lang.reflect.Constructor;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.services.ratelimiter.adapter.DefaultBaseQqsAdapter;
 import org.tron.core.services.ratelimiter.adapter.IPreemptibleRateLimiter;
+import org.tron.core.services.ratelimiter.cidr.CidrRateLimiter;
 import org.tron.core.services.ratelimiter.adapter.IRateLimiter;
 import org.tron.core.services.ratelimiter.strategy.QpsStrategy;
 
@@ -110,7 +112,9 @@ public class RateLimiterInterceptor implements ServerInterceptor {
     // Check per-endpoint first to avoid consuming global IP/QPS quota for requests
     // that would be rejected by the per-endpoint limiter anyway.
     boolean perEndpointAcquired = rateLimiter == null || rateLimiter.tryAcquire(runtimeData);
-    boolean acquireResource = perEndpointAcquired && GlobalRateLimiter.tryAcquire(runtimeData);
+    boolean acquireResource = perEndpointAcquired
+        && !Optional.of(false).equals(CidrRateLimiter.tryAcquireStatic(runtimeData))
+        && GlobalRateLimiter.tryAcquire(runtimeData);
 
     if (!acquireResource) {
       // Release the per-endpoint permit when global rejected, to avoid semaphore leak.
