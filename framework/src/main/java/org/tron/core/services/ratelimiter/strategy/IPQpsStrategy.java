@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.RateLimiter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class IPQpsStrategy extends Strategy {
@@ -19,14 +20,16 @@ public class IPQpsStrategy extends Strategy {
     super(paramString);
   }
 
-  public boolean acquire(String ip) {
-    RateLimiter limiter = ipLimiter.getIfPresent(ip);
-    if (limiter == null) {
+  public boolean tryAcquire(String ip) {
+    RateLimiter limiter;
+    try {
+      // cache.get is atomic: only one loader executes per key under concurrent requests,
+      // preventing multiple RateLimiter instances from being created for the same IP.
+      limiter = ipLimiter.get(ip, this::newRateLimiter);
+    } catch (ExecutionException e) {
       limiter = newRateLimiter();
-      ipLimiter.put(ip, limiter);
     }
-    limiter.acquire();
-    return true;
+    return limiter.tryAcquire();
   }
 
   private RateLimiter newRateLimiter() {
